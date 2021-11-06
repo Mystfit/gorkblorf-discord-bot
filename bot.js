@@ -130,6 +130,8 @@ async function populate_markov_from_channel(channel, num_messages) {
 
       // Train the markov
       markov_bot.seed(markov_training.join(' '))
+    }).catch(error => {
+      console.log("Couldn't access channel. Reason:", error);
     });
 }
 
