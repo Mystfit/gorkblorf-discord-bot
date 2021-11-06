@@ -22,7 +22,7 @@ let max_violations = ('MAX_GORKBLORF_VIOLATIONS' in process.env) ? process.env.M
 let start_seed_messages = ('START_SEED_MESSAGES' in process.env) ? process.env.START_SEED_MESSAGES : 500;
 let puncutation_chance = 5;
 let url_re = /(^|\s)((https?:\/\/)?[\w-]+(\.[\w-]+)+\.?(:\d+)?(\/\S*)?)/gi;
-
+let mention_re = /\@\w+/gim;
 
 // Login to Discord
 client.on('ready', () => {
@@ -41,17 +41,14 @@ client.on('messageCreate', message => {
 
   // Have the bot watch for new messages arriving in a specific channel
   if (message.channel.id === watch_channel || message.channel instanceof Discord.DMChannel){
-
+    
     // Make sure message is a valid gorkblorf and get violating words
-    validated_message = validate_gorkblorf_message(message).join(' ');
-
-    // Get rid of Discord user mentions (any @user text)
-    var clean_message = message.content.replace(Discord.MessageMentions.USERS_PATTERN, '');
+    validated_message = validate_gorkblorf_message(message)["valid_words"].join(' ');
 
     // Train the markov chain with the new data
     if(validated_message.length < max_violations){
-      console.log("Adding new message to markov database:", clean_message);
-      markov_bot.seed(clean_message);
+      console.log("Adding new message to markov database:", validated_message);
+      markov_bot.seed(validated_message);
     }
 
     // Watch for direct mentions of the bot and reply to the user
@@ -74,7 +71,7 @@ client.on('messageCreate', message => {
 function validate_gorkblorf_message(message)
 {
   var violations = [];
-  var clean_message = message.content.replace(Discord.MessageMentions.USERS_PATTERN);
+  var clean_message = sanitize_message(message.content);
 
   // Ignore URLs
   if(clean_message.match(url_re)){
@@ -100,6 +97,8 @@ function validate_gorkblorf_message(message)
         num_violations += 1;
         violations.push(word);
         console.log("Violation:", word + ",", "Language:", languages[0][0]+ ",", "Confidence:", languages[0][1]);
+      } else {
+        valid_words.push(word);
       }
     }
   });
@@ -112,11 +111,12 @@ function validate_gorkblorf_message(message)
     console.log("Good gorkblorf. Total violations for phrase", clean_message, "=", num_violations);
   }
 
-  return violations;
+  return {"valid": valid_words, "invalid": violations};
 }
 
 
-async function populate_markov_from_channel(channel, num_messages) {
+async function populate_markov_from_channel(channel, num_messages) 
+{
   client.channels.fetch(channel).then(async channel => {
 
       // Bulk download of existing channel messages
@@ -124,13 +124,10 @@ async function populate_markov_from_channel(channel, num_messages) {
 
       var markov_training = [];
       // Prepare training string
+      
       messages.forEach(message => {
-        // Ignore URLs
-        if(message[1].content.match(url_re)){
-          return;
-        }
-
-        markov_training.push(message[1].content.replace(Discord.MessageMentions.USERS_PATTERN, ''));
+        validated = validate_gorkblorf_message(message[1]);
+        markov_training.push(validated["valid_words"]);
       });
 
       // Train the markov
@@ -140,7 +137,16 @@ async function populate_markov_from_channel(channel, num_messages) {
     });
 }
 
-async function lots_of_messages_getter(channel, limit = 500) {
+function sanitize_message(message_str)
+{
+  return message_str.replace(url_re, '')
+    .replace(Discord.MessageMentions.USERS_PATTERN, '')
+    .replace(mention_re, '');
+}
+
+
+async function lots_of_messages_getter(channel, limit = 500) 
+{
   const sum_messages = [];
   let last_id;
 
