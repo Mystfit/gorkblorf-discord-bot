@@ -47,7 +47,7 @@ client.on('messageCreate', message => {
     validated_message = message_parsed["valid"].join(' ');
 
     // Train the markov chain with the new data
-    if(validated_message.length < max_violations){
+    if(message_parsed["invalid"].length < max_violations){
       console.log("Adding new message to markov database:", validated_message);
       markov_bot.seed(validated_message);
     }
