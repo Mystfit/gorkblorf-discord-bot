@@ -128,7 +128,7 @@ async function populate_markov_from_channel(channel, num_messages)
       
       messages.forEach(message => {
         validated = validate_gorkblorf_message(message[1]);
-        markov_training.push(validated["valid"]);
+        markov_training.push(validated["valid"].join(' '));
       });
 
       // Train the markov
