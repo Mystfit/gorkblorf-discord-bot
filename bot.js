@@ -43,7 +43,7 @@ client.on('messageCreate', message => {
   if (message.channel.id === watch_channel || message.channel instanceof Discord.DMChannel){
     
     // Make sure message is a valid gorkblorf and get violating words
-    validated_message = validate_gorkblorf_message(message)["valid_words"].join(' ');
+    validated_message = validate_gorkblorf_message(message)["valid"].join(' ');
 
     // Train the markov chain with the new data
     if(validated_message.length < max_violations){
@@ -127,7 +127,7 @@ async function populate_markov_from_channel(channel, num_messages)
       
       messages.forEach(message => {
         validated = validate_gorkblorf_message(message[1]);
-        markov_training.push(validated["valid_words"]);
+        markov_training.push(validated["valid"]);
       });
 
       // Train the markov
