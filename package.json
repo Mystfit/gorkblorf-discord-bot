@@ -8,6 +8,6 @@
 		"discord.js": "^13.3.1",
 		"dotenv": "^8.2.0",
 		"languagedetect": "^2.0.0",
-		"markov-generator": "^1.2.3"
+		"markov": "^0.0.7"
 	}
 }
