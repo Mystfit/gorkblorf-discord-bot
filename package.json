@@ -9,6 +9,7 @@
 		"dotenv": "^8.2.0",
 		"languagedetect": "^2.0.0",
 		"markov": "^0.0.7",
-		"iso-639-language": "^1.0.1"
+		"iso-639-language": "^1.0.1",
+		"country-language": "^0.1.7"
 	}
 }
