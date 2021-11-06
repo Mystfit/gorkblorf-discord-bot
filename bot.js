@@ -49,7 +49,7 @@ client.on('messageCreate', message => {
     var clean_message = message.content.replace(Discord.MessageMentions.USERS_PATTERN, '');
 
     // Train the markov chain with the new data
-    if(validated_message.length < 1){
+    if(validated_message.length < max_violations){
       console.log("Adding new message to markov database:", clean_message);
       markov_bot.seed(clean_message);
     }
