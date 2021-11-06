@@ -71,6 +71,7 @@ client.on('messageCreate', message => {
 function validate_gorkblorf_message(message)
 {
   var violations = [];
+  var valid_words = [];
   var clean_message = sanitize_message(message.content);
 
   // Ignore URLs
