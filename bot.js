@@ -121,7 +121,7 @@ function validate_gorkblorf_message(message)
           console.log(err);
         } else {
           if(countries.length){
-            var flag = ":flag_" + countries[0].code_2 + ":";
+            var flag = ":flag_" + countries[0].code_2.toLower() + ":";
             console.log("Violation flag is", flag);
             message.react(flag);
           }
