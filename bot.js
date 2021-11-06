@@ -43,7 +43,8 @@ client.on('messageCreate', message => {
   if (message.channel.id === watch_channel || message.channel instanceof Discord.DMChannel){
     
     // Make sure message is a valid gorkblorf and get violating words
-    validated_message = validate_gorkblorf_message(message)["valid"].join(' ');
+    message_parsed = validate_gorkblorf_message(message)
+    validated_message = message_parsed["valid"].join(' ');
 
     // Train the markov chain with the new data
     if(validated_message.length < max_violations){
@@ -96,7 +97,7 @@ function validate_gorkblorf_message(message)
       // Check the match against the hand-tweaked threshold
       if(languages[0][1] > language_match_threshold){
         num_violations += 1;
-        violations.push(word);
+        violations.push({"word": word, "language": languages[0][0]});
         console.log("Violation:", word + ",", "Language:", languages[0][0]+ ",", "Confidence:", languages[0][1]);
       } else {
         valid_words.push(word);
@@ -105,7 +106,7 @@ function validate_gorkblorf_message(message)
   });
 
   // Forgive false positives by accumulating violations until we just can't take it any more
-  if(num_violations >= max_violations || num_violations >= split_phrase.length-1){
+  if(num_violations >= max_violations){
     console.log("Number of Gorkblorf violations:", num_violations);
     message.react('🔴');
   } else {
