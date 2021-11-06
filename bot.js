@@ -50,6 +50,21 @@ client.on('messageCreate', message => {
     message_parsed = validate_gorkblorf_message(message);
     validated_message = message_parsed["valid"].join(' ');
 
+    message_parsed.invalid.forEach(violation => {
+      var lang_code = iso639_1.getCodeByName(violation["language"]); 
+      CountryLanguage.getLanguageCountries(lang_code, function (err, countries) {
+        if (err) {
+          console.log(err);
+        } else {
+          if(countries.length){
+            var flag = ":flag_" + countries[0].code_2.toLowerCase() + ":";
+            console.log("Violation flag is", flag);
+            message.react(flag);
+          }
+        }
+      });
+    });
+
     // Train the markov chain with the new data
     if(message_parsed["invalid"].length < max_violations && message.author.id != client.user.id){
       console.log("Adding new message to markov database:", validated_message);
@@ -113,22 +128,6 @@ function validate_gorkblorf_message(message)
   if(num_violations >= max_violations){
     console.log("Number of Gorkblorf violations:", num_violations);
     message.react('🔴');
-
-    violations.forEach(violation => {
-      var lang_code = iso639_1.getCodeByName(violation["language"]); 
-      CountryLanguage.getLanguageCountries(lang_code, function (err, countries) {
-        if (err) {
-          console.log(err);
-        } else {
-          if(countries.length){
-            var flag = ":flag_" + countries[0].code_2.toLowerCase() + ":";
-            console.log("Violation flag is", flag);
-            message.react(flag);
-          }
-        }
-      });
-    });
-
   } else {
     console.log("Good gorkblorf. Total violations for phrase", clean_message, "=", num_violations);
   }
