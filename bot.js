@@ -2,6 +2,9 @@ require('dotenv').config();
 const Discord = require('discord.js');
 const LanguageDetect = require('languagedetect');
 const lngDetector = new LanguageDetect();
+const CountryLanguage = require('country-language');
+const Iso639Type = require('iso-639-language');
+
 var markov = require('markov');
 var markov_bot = markov();
 
@@ -43,11 +46,11 @@ client.on('messageCreate', message => {
   if (message.channel.id === watch_channel || message.channel instanceof Discord.DMChannel){
     
     // Make sure message is a valid gorkblorf and get violating words
-    message_parsed = validate_gorkblorf_message(message)
+    message_parsed = validate_gorkblorf_message(message);
     validated_message = message_parsed["valid"].join(' ');
 
     // Train the markov chain with the new data
-    if(message_parsed["invalid"].length < max_violations){
+    if(message_parsed["invalid"].length < max_violations && message.author.id != client.user.id){
       console.log("Adding new message to markov database:", validated_message);
       markov_bot.seed(validated_message);
     }
@@ -109,6 +112,25 @@ function validate_gorkblorf_message(message)
   if(num_violations >= max_violations){
     console.log("Number of Gorkblorf violations:", num_violations);
     message.react('🔴');
+
+    violations.forEach(violation => {
+      var lang_code = iso639_1.getCodeByName(violation["language"]); 
+      CountryLanguage.getLanguageCountries(lang_code, function (err, countries) {
+        if (err) {
+          console.log(err);
+        } else {
+          if(countryCodes.length){
+            var flag = ":flag_" + countryCodes[0].code_2 + ":";
+            console.log("Violation flag is", flag);
+            //message.react();
+          }
+          countries.forEach(function (countryCodes) {
+            console.log(countryCodes.code_3);
+          });
+        }
+      });
+    });
+
   } else {
     console.log("Good gorkblorf. Total violations for phrase", clean_message, "=", num_violations);
   }
