@@ -57,9 +57,10 @@ client.on('messageCreate', message => {
           console.log(err);
         } else {
           if(countries.length){
-            var flag = "\\:flag_" + countries[0].code_2.toLowerCase() + ":";
+            var flag = "flag_" + countries[0].code_2.toLowerCase();
             console.log("Violation flag is", flag);
-            message.react(flag);
+            const flagemojii = client.emojis.cache.find(emoji => emoji.name === "flag_");
+            message.react(flagemojii);
           }
         }
       });
