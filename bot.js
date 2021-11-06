@@ -4,7 +4,7 @@ const LanguageDetect = require('languagedetect');
 const lngDetector = new LanguageDetect();
 const CountryLanguage = require('country-language');
 const Iso639Type = require('iso-639-language');
-const iso639_1 = Iso639Type.getType(1); 
+const iso639_2 = Iso639Type.getType(2); 
 
 var markov = require('markov');
 var markov_bot = markov();
@@ -115,7 +115,7 @@ function validate_gorkblorf_message(message)
     message.react('🔴');
 
     violations.forEach(violation => {
-      var lang_code = Iso639Type.getCodeByName(violation["language"]); 
+      var lang_code = iso639_2.getCodeByName(violation["language"]); 
       CountryLanguage.getLanguageCountries(lang_code, function (err, countries) {
         if (err) {
           console.log(err);
