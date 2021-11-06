@@ -98,11 +98,6 @@ function validate_gorkblorf_message(message)
       if(word.length < 3)
         return;
 
-      console.log("Detected languages:");
-      languages.forEach(language => {
-        console.log(language);
-      });
-
       // Check the match against the hand-tweaked threshold
       if(languages[0][1] > language_match_threshold){
         num_violations += 1;
@@ -128,7 +123,7 @@ function validate_gorkblorf_message(message)
           if(countries.length){
             var flag = ":flag_" + countries[0].code_2 + ":";
             console.log("Violation flag is", flag);
-            //message.react();
+            message.react(flag);
           }
         }
       });
