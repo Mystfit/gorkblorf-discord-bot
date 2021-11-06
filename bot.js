@@ -4,7 +4,7 @@ const LanguageDetect = require('languagedetect');
 const lngDetector = new LanguageDetect();
 const CountryLanguage = require('country-language');
 const Iso639Type = require('iso-639-language');
-const iso639_2 = Iso639Type.getType(2); 
+const iso639_2 = Iso639Type["default"].getType(2);
 
 var markov = require('markov');
 var markov_bot = markov();
@@ -120,14 +120,11 @@ function validate_gorkblorf_message(message)
         if (err) {
           console.log(err);
         } else {
-          if(countryCodes.length){
-            var flag = ":flag_" + countryCodes[0].code_2 + ":";
+          if(countries.length){
+            var flag = ":flag_" + countries[0].code_2 + ":";
             console.log("Violation flag is", flag);
             //message.react();
           }
-          countries.forEach(function (countryCodes) {
-            console.log(countryCodes.code_3);
-          });
         }
       });
     });
