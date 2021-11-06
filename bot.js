@@ -58,9 +58,13 @@ client.on('messageCreate', message => {
     if((message.mentions.users.find(u => u.id === client.user.id) || message.channel instanceof Discord.DMChannel) 
       && message.author.id != client.user.id)
     {
-      response = markov_bot.respond(markov_bot.pick(), 5);
-      suffix = (Math.round(Math.random() * puncutation_chance) > puncutation_chance-1) ? ((Math.random() > 0.5) ? "?" : "!") : "";
-      message.reply(response.join(' ') + suffix);
+      if(var key = markov_bot.pick()){
+        response = markov_bot.respond(markov_bot.pick(), 5);
+        suffix = (Math.round(Math.random() * puncutation_chance) > puncutation_chance-1) ? ((Math.random() > 0.5) ? "?" : "!") : "";
+        message.reply(response.join(' ') + suffix);
+      } else {
+        console.log("No key returned from markov chain. Has it been seeded yet?");
+      }
     }
   }
 });
