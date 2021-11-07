@@ -5,11 +5,12 @@
 	"main": "bot.js",
 	"author": "Gorkblorf",
 	"dependencies": {
+		"country-code-emoji": "^2.3.0",
+		"country-language": "^0.1.7",
 		"discord.js": "^13.3.1",
 		"dotenv": "^8.2.0",
-		"languagedetect": "^2.0.0",
-		"markov": "^0.0.7",
 		"iso-639-language": "^1.0.1",
-		"country-language": "^0.1.7"
+		"languagedetect": "^2.0.0",
+		"markov": "^0.0.7"
 	}
 }

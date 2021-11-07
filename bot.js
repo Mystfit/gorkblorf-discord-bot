@@ -1,22 +1,39 @@
 require('dotenv').config();
+var fs = require('fs');
+var path = require('path');
+
 const Discord = require('discord.js');
 const LanguageDetect = require('languagedetect');
 const lngDetector = new LanguageDetect();
 const CountryLanguage = require('country-language');
 const Iso639Type = require('iso-639-language');
 const iso639_1 = Iso639Type["default"].getType(1);
+const countryCodeEmoji = require('country-code-emoji');
 
 var markov = require('markov');
 var markov_bot = markov();
+var Trie = require('./trie');
 
-// Discord client with the intents that it will require in order to operate
-const client = new Discord.Client({ intents: [
-    "GUILD_MESSAGES",
-    "GUILD_MESSAGE_REACTIONS",
-    "DIRECT_MESSAGES",
-    "DIRECT_MESSAGE_REACTIONS"
-    ],
-    partials: ["CHANNEL"]
+var languages = {};
+  p = path.resolve(__dirname, "languages");
+  console.log(p);
+  fs.readdirSync(p).forEach(file => {
+    f = path.resolve(p, file);
+    if (fs.existsSync(f)){
+      var language = new Trie();
+      language_name = path.basename(f, path.extname(f));
+      console.log("Language:", language_name);
+      languages[language_name] = language;
+
+      fs.readFile(f, 'utf8', function(err, data) {
+        if (err) throw err;
+        lines = data.split(/\r?\n/);
+        lines.forEach(line => {
+          if(line)
+            language.insert(line);
+        });
+      });
+    }
 });
 
 // Constants
@@ -28,14 +45,29 @@ let puncutation_chance = 5;
 let url_re = /(^|\s)((https?:\/\/)?[\w-]+(\.[\w-]+)+\.?(:\d+)?(\/\S*)?)/gi;
 let mention_re = /\@\w+/gim;
 
+
+// Discord client with the intents that it will require in order to operate
+const client = new Discord.Client({ intents: [
+    "GUILD_MESSAGES",
+    "GUILD_MESSAGE_REACTIONS",
+    "DIRECT_MESSAGES",
+    "DIRECT_MESSAGE_REACTIONS"
+    ],
+    partials: ["CHANNEL"]
+});
+
 // Login to Discord
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
     client.user.setActivity('#gorkblorf™ Slorps gamach jubelnard zeferelyfulee fug graftrax himlarpiny sharglafei morgstar', { type: 'LISTENING'});
     populate_markov_from_channel(watch_channel, start_seed_messages);
 });
-client.login(process.env.DISCORD_TOKEN);
 
+try{
+  client.login(process.env.DISCORD_TOKEN);
+} catch(err){
+  console.log("Couldn't login to Discord", err);
+}
 
 // Direct message the bot
 client.on('messageCreate', message => {
@@ -58,8 +90,7 @@ client.on('messageCreate', message => {
           console.log(err);
         } else {
           if(countries.length){
-            var flag = "flag_" + countries[0].code_2.toLowerCase();
-            const flagemojii = client.emojis.cache.find(emoji => emoji.name === flag);
+            var flagemojii = countryCodeEmoji(countries[0].code_2.toUpperCase());
             console.log("Violation flag is", flagemojii);
             if(flagemojii)
               message.react(flagemojii);
@@ -68,7 +99,7 @@ client.on('messageCreate', message => {
       });
     });
 
-    // Train the markov chain with the new data
+    // Train the markov chain with the new data - ignore ourselves so we don't weight probabilities
     if(message_parsed["invalid"].length < max_violations && message.author.id != client.user.id){
       console.log("Adding new message to markov database:", validated_message);
       markov_bot.seed(validated_message);
@@ -111,7 +142,7 @@ function validate_gorkblorf_message(message)
   split_phrase.forEach(word => {
 
     // Get language match confidences
-    languages = lngDetector.detect(word);
+    languages = word_language(word);//lngDetector.detect(word);
 
     // We might not match any existing language (gorkblorf!)
     if(languages.length > 0){
@@ -162,6 +193,18 @@ async function populate_markov_from_channel(channel, num_messages)
       console.log("Couldn't access channel. Reason:", error);
     });
 }
+
+
+function word_language(word)
+{
+  violations = []
+  languages.forEach(language => {
+    if(language.has(word))
+      violations.push([language, 1.0]);
+  });
+  return violations;
+}
+
 
 function sanitize_message(message_str)
 {
