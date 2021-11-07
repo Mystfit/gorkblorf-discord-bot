@@ -72,7 +72,6 @@ client.on('messageCreate', message => {
     if(message_parsed["invalid"].length < max_violations && message.author.id != client.user.id){
       console.log("Adding new message to markov database:", validated_message);
       markov_bot.seed(validated_message);
-      client.user.setActivity(validated_message, { type: 'LISTENING'});
     }
 
     // Watch for direct mentions of the bot and reply to the user
@@ -81,9 +80,11 @@ client.on('messageCreate', message => {
     {
       var key = markov_bot.pick();
       if(key){
-        response = markov_bot.respond(markov_bot.pick(), 5);
-        suffix = (Math.round(Math.random() * puncutation_chance) > puncutation_chance-1) ? ((Math.random() > 0.5) ? "?" : "!") : "";
-        message.reply(response.join(' ') + suffix);
+        var response = markov_bot.respond(markov_bot.pick(), 5);
+        var suffix = (Math.round(Math.random() * puncutation_chance) > puncutation_chance-1) ? ((Math.random() > 0.5) ? "?" : "!") : "";
+        var final_reply = response.join(' ') + suffix;
+        message.reply(final_reply);
+        client.user.setActivity(final_reply, { type: 'LISTENING'});
       } else {
         console.log("No key returned from markov chain. Has it been seeded yet?");
       }
