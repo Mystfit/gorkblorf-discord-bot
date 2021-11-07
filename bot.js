@@ -21,7 +21,7 @@ fs.readdirSync(p).forEach(file => {
   if (fs.existsSync(f)){
     let language = new Trie();
     language_name = path.basename(f, path.extname(f));
-    console.log("Language:", language_name);
+    console.log("Language file:", language_name);
     try {
       data = fs.readFileSync(f, 'utf8');
       lines = data.split(/\r?\n/);
@@ -34,7 +34,7 @@ fs.readdirSync(p).forEach(file => {
     languages[language_name] = language;
   }
 });
-console.log("Final languages", languages);
+console.log("Loaded languages", languages);
 
 // Constants
 let watch_channel = ('CHANNEL' in process.env) ? process.env.CHANNEL : "905706918243364865";
@@ -143,7 +143,6 @@ function validate_gorkblorf_message(message)
 
     // Get language match confidences
     detected_languages = word_language(word);//lngDetector.detect(word);
-    console.log("Returned matching languages:", detected_languages);
 
     // We might not match any existing language (gorkblorf!)
     if(detected_languages.length > 0){
@@ -200,8 +199,6 @@ function word_language(word)
 {
   violations = []
   Object.keys(languages).forEach(lang => {
-    console.log(languages);
-    console.log("Word", word, "in language", lang, languages[lang].has(word))
     if(languages[lang].has(word))
       violations.push([lang, 1.0]);
   });
