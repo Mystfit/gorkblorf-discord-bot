@@ -39,7 +39,7 @@ console.log("Loaded languages", languages);
 // Constants
 let watch_channel = ('CHANNEL' in process.env) ? process.env.CHANNEL : "905706918243364865";
 let language_match_threshold = ('LANGUAGE_MATCH_THRESHOLD' in process.env) ? process.env.LANGUAGE_MATCH_THRESHOLD : 0.4;
-let max_violations = ('MAX_GORKBLORF_VIOLATIONS' in process.env) ? process.env.MAX_GORKBLORF_VIOLATIONS : 3;
+let max_violations = ('MAX_GORKBLORF_VIOLATIONS' in process.env) ? process.env.MAX_GORKBLORF_VIOLATIONS : 1;
 let start_seed_messages = ('START_SEED_MESSAGES' in process.env) ? process.env.START_SEED_MESSAGES : 500;
 let puncutation_chance = 5;
 let url_re = /(^|\s)((https?:\/\/)?[\w-]+(\.[\w-]+)+\.?(:\d+)?(\/\S*)?)/gi;
@@ -103,7 +103,7 @@ client.on('messageCreate', message => {
     }
 
     // Train the markov chain with the new data - ignore ourselves so we don't weight probabilities
-    if(message_parsed["invalid"].length < max_violations && message.author.id != client.user.id){
+    if(message_parsed["invalid"].length < max_violations && message_parsed["valid"].length >= max_violations && message.author.id != client.user.id){
       console.log("Adding new message to markov database:", validated_message);
       markov_bot.seed(validated_message);
     }
