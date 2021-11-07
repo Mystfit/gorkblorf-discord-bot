@@ -143,7 +143,6 @@ function validate_gorkblorf_message(message)
   split_phrase.forEach(word => {
 
     // Get language match confidences
-    console.log(word);
     languages = word_language(word);//lngDetector.detect(word);
     console.log("Returned matching languages:", languages);
 
