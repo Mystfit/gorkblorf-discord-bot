@@ -200,6 +200,7 @@ function word_language(word)
 {
   violations = []
   Object.keys(languages).forEach(lang => {
+    console.log(languages);
     console.log("Word", word, "in language", lang, languages[lang].has(word))
     if(languages[lang].has(word))
       violations.push([lang, 1.0]);
