@@ -16,19 +16,20 @@ var Trie = require('./trie');
 
 var languages = {};
   p = path.resolve(__dirname, "languages");
-  console.log(p);
   fs.readdirSync(p).forEach(file => {
     f = path.resolve(p, file);
     if (fs.existsSync(f)){
       var language = new Trie();
       language_name = path.basename(f, path.extname(f));
       console.log("Language:", language_name);
-      fs.readFile(f, 'utf8', function(err, data) {
+      fs.readFileSync(f, 'utf8', function(err, data) {
         if (err) throw err;
         lines = data.split(/\r?\n/);
         lines.forEach(line => {
-          if(line)
+          if(line){
+            console.log();
             language.insert(line);
+          }
         });
       });
       languages[language_name] = language;
