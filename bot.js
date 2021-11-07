@@ -198,7 +198,7 @@ async function populate_markov_from_channel(channel, num_messages)
 function word_language(word)
 {
   violations = []
-  object.keys(languages).forEach(language => {
+  Object.keys(languages).forEach(language => {
     if(languages[language].has(word))
       violations.push([language, 1.0]);
   });
