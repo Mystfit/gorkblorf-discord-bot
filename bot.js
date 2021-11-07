@@ -142,6 +142,7 @@ function validate_gorkblorf_message(message)
 
     // Get language match confidences
     languages = word_language(word);//lngDetector.detect(word);
+    console.log("Returned matching languages:", languages);
 
     // We might not match any existing language (gorkblorf!)
     if(languages.length > 0){
@@ -198,7 +199,6 @@ function word_language(word)
 {
   violations = []
   Object.keys(languages).forEach(language => {
-    console.log(languages[language]);
     console.log("Word", word, "in language", language, languages[language].has(word))
     if(languages[language].has(word))
       violations.push([language, 1.0]);
