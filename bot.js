@@ -72,6 +72,7 @@ client.on('messageCreate', message => {
     if(message_parsed["invalid"].length < max_violations && message.author.id != client.user.id){
       console.log("Adding new message to markov database:", validated_message);
       markov_bot.seed(validated_message);
+      client.user.setActivity(validated_message, { type: 'LISTENING'});
     }
 
     // Watch for direct mentions of the bot and reply to the user
