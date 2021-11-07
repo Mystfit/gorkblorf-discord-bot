@@ -90,7 +90,7 @@ client.on('messageCreate', message => {
           console.log(err);
         } else {
           if(countries.length){
-            var flagemojii = countryCodeEmoji(countries[0].code_1.toUpperCase());
+            var flagemojii = countryCodeEmoji(countries[0].code_2.toUpperCase());
             console.log("Violation flag is", flagemojii);
             if(flagemojii)
               message.react(flagemojii);
