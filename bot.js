@@ -31,7 +31,7 @@ let mention_re = /\@\w+/gim;
 // Login to Discord
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
-    client.user.setActivity('Slorps gamach GORKBLORF jubelnard zeferelyfulee fug graftrax himlarpiny sharglafei morgstar', { type: 'WATCHING' });
+    client.user.setActivity('#gorkblorf™ Slorps gamach jubelnard zeferelyfulee fug graftrax himlarpiny sharglafei morgstar');
     populate_markov_from_channel(watch_channel, start_seed_messages);
 });
 client.login(process.env.DISCORD_TOKEN);
