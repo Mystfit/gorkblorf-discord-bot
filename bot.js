@@ -24,6 +24,7 @@ fs.readdirSync(p).forEach(file => {
     console.log("Language:", language_name);
     fs.readFileSync(f, 'utf8', function(err, data) {
       if (err) throw err;
+      console.log(data);
       lines = data.split(/\r?\n/);
       lines.forEach(line => {
         language.insert(line);
