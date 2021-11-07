@@ -23,8 +23,6 @@ var languages = {};
       var language = new Trie();
       language_name = path.basename(f, path.extname(f));
       console.log("Language:", language_name);
-      languages[language_name] = language;
-
       fs.readFile(f, 'utf8', function(err, data) {
         if (err) throw err;
         lines = data.split(/\r?\n/);
@@ -33,6 +31,7 @@ var languages = {};
             language.insert(line);
         });
       });
+      languages[language_name] = language;
     }
 });
 
@@ -199,6 +198,8 @@ function word_language(word)
 {
   violations = []
   Object.keys(languages).forEach(language => {
+    console.log(languages[language]);
+    console.log("Word", word, "in language", language, languages[language].has(word))
     if(languages[language].has(word))
       violations.push([language, 1.0]);
   });
