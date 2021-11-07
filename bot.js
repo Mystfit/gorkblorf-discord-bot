@@ -142,19 +142,19 @@ function validate_gorkblorf_message(message)
   split_phrase.forEach(word => {
 
     // Get language match confidences
-    languages = word_language(word);//lngDetector.detect(word);
-    console.log("Returned matching languages:", languages);
+    detected_languages = word_language(word);//lngDetector.detect(word);
+    console.log("Returned matching languages:", detected_languages);
 
     // We might not match any existing language (gorkblorf!)
-    if(languages.length > 0){
+    if(detected_languages.length > 0){
       if(word.length < 3)
         return;
 
       // Check the match against the hand-tweaked threshold
-      if(languages[0][1] > language_match_threshold){
+      if(detected_languages[0][1] > language_match_threshold){
         num_violations += 1;
-        violations.push({"word": word, "language": languages[0][0]});
-        console.log("Violation:", word + ",", "Language:", languages[0][0]+ ",", "Confidence:", languages[0][1]);
+        violations.push({"word": word, "language": detected_languages[0][0]});
+        console.log("Violation:", word + ",", "Language:", detected_languages[0][0]+ ",", "Confidence:", detected_languages[0][1]);
       } else {
         valid_words.push(word);
       }
