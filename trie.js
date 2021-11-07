@@ -1,4 +1,5 @@
 class Trie {
+
     root = {
         value: -1,
         symbol: null,
@@ -15,14 +16,13 @@ class Trie {
 
 module.exports = Trie;
 
-
 function hasValue(node, value) {
     var matchingChild = -1;
     var returnMe = false;
 
     for (let i = 0; i < node.children.length; i++) {
         if (value.indexOf(node.children[i].symbol) === 0) {
-            if (value.length == node.children[i].symbol.length) {
+            if (value.length == node.children[i].symbol.length && node.children[i].value >= 0) {
                 returnMe = true;
             } else {
                 matchingChild = i;
@@ -48,7 +48,7 @@ function findInsertionPoint(node, value) {
         if (value.indexOf(node.children[i].symbol) === 0) {
             //if the current node matches the start of the value
             if (value.length == node.children[i].symbol.length) {
-                node.children[i].value = Date.now() + " " + Math.random() * 9999;
+                node.children[i].value = Date.now() + Math.random();
                 return;
             }
             //mark the index of the child whose symbol appears in the value to be inserted
