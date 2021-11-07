@@ -22,14 +22,15 @@ fs.readdirSync(p).forEach(file => {
     let language = new Trie();
     language_name = path.basename(f, path.extname(f));
     console.log("Language:", language_name);
-    fs.readFileSync(f, 'utf8', function(err, data) {
-      if (err) throw err;
-      console.log(data);
+    try {
+      data = fs.readFileSync(f, 'utf8');
       lines = data.split(/\r?\n/);
       lines.forEach(line => {
         language.insert(line);
       });
-    });
+    } catch (err){
+      console.log(err);
+    }
     languages[language_name] = language;
   }
 });
