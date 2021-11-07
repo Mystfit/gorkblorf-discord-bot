@@ -15,26 +15,27 @@ var markov_bot = markov();
 var Trie = require('./trie');
 
 var languages = {};
-  p = path.resolve(__dirname, "languages");
-  fs.readdirSync(p).forEach(file => {
-    f = path.resolve(p, file);
-    if (fs.existsSync(f)){
-      var language = new Trie();
-      language_name = path.basename(f, path.extname(f));
-      console.log("Language:", language_name);
-      fs.readFileSync(f, 'utf8', function(err, data) {
-        if (err) throw err;
-        lines = data.split(/\r?\n/);
-        lines.forEach(line => {
-          if(line){
-            console.log();
-            language.insert(line);
-          }
-        });
+p = path.resolve(__dirname, "languages");
+fs.readdirSync(p).forEach(file => {
+  f = path.resolve(p, file);
+  if (fs.existsSync(f)){
+    var language = new Trie();
+    language_name = path.basename(f, path.extname(f));
+    console.log("Language:", language_name);
+    fs.readFileSync(f, 'utf8', function(err, data) {
+      if (err) throw err;
+      lines = data.split(/\r?\n/);
+      lines.forEach(line => {
+        if(line){
+          console.log(line);
+          language.insert(line);
+        }
       });
-      languages[language_name] = language;
-    }
+    });
+    languages[language_name] = language;
+  }
 });
+console.log("Final languages", languages);
 
 // Constants
 let watch_channel = ('CHANNEL' in process.env) ? process.env.CHANNEL : "905706918243364865";
@@ -142,6 +143,7 @@ function validate_gorkblorf_message(message)
   split_phrase.forEach(word => {
 
     // Get language match confidences
+    console.log(word);
     languages = word_language(word);//lngDetector.detect(word);
     console.log("Returned matching languages:", languages);
 
@@ -199,10 +201,10 @@ async function populate_markov_from_channel(channel, num_messages)
 function word_language(word)
 {
   violations = []
-  Object.keys(languages).forEach(language => {
-    console.log("Word", word, "in language", language, languages[language].has(word))
-    if(languages[language].has(word))
-      violations.push([language, 1.0]);
+  Object.keys(languages).forEach(lang => {
+    console.log("Word", word, "in language", lang, languages[lang].has(word))
+    if(languages[lang].has(word))
+      violations.push([lang, 1.0]);
   });
   return violations;
 }
