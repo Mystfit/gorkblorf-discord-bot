@@ -14,22 +14,19 @@ var markov = require('markov');
 var markov_bot = markov();
 var Trie = require('./trie');
 
-var languages = {};
+let languages = {};
 p = path.resolve(__dirname, "languages");
 fs.readdirSync(p).forEach(file => {
   f = path.resolve(p, file);
   if (fs.existsSync(f)){
-    var language = new Trie();
+    let language = new Trie();
     language_name = path.basename(f, path.extname(f));
     console.log("Language:", language_name);
     fs.readFileSync(f, 'utf8', function(err, data) {
       if (err) throw err;
       lines = data.split(/\r?\n/);
       lines.forEach(line => {
-        if(line){
-          console.log(line);
-          language.insert(line);
-        }
+        language.insert(line);
       });
     });
     languages[language_name] = language;
