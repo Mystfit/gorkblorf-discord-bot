@@ -143,19 +143,27 @@ function validate_gorkblorf_message(message)
 
     // Get language match confidences
     detected_languages = word_language(word);//lngDetector.detect(word);
-
+    valid_word = false;
+    
     // We might not match any existing language (gorkblorf!)
-    if(word.length < 3)
-      return;
+    if(detected_languages.length > 0){
+      if(word.length < 3)
+        return;
 
-    // Check the match against the hand-tweaked threshold
-    if(detected_languages[0][1] > language_match_threshold){
-      num_violations += 1;
-      violations.push({"word": word, "language": detected_languages[0][0]});
-      console.log("Violation:", word + ",", "Language:", detected_languages[0][0]+ ",", "Confidence:", detected_languages[0][1]);
+      // Check the match against the hand-tweaked threshold
+      if(detected_languages[0][1] > language_match_threshold){
+        num_violations += 1;
+        violations.push({"word": word, "language": detected_languages[0][0]});
+        console.log("Violation:", word + ",", "Language:", detected_languages[0][0]+ ",", "Confidence:", detected_languages[0][1]);
+      } else {
+        valid_word = true;
+      }
     } else {
-      valid_words.push(word);
+      valid_word = true;
     }
+
+    if(valid_word)
+      valid_words.push(word);
   });
 
   // Forgive false positives by accumulating violations until we just can't take it any more
