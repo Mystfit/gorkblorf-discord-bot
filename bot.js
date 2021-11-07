@@ -86,13 +86,13 @@ client.on('messageCreate', message => {
     if(message_parsed.invalid.length >= max_violations){
       message_parsed.invalid.forEach(violation => {
         var lang_code = iso639_1.getCodeByName(violation["language"]); 
-        console.log("Flag code", lang_code);
+        console.log("Violating language code", lang_code);
         CountryLanguage.getLanguageCountries(lang_code, function (err, countries) {
           if (err) {
             console.log(err);
           } else {
             if(countries.length){
-              var flagemojii = countryCodeEmoji(countries[0].code_2.toUpperCase());
+              var flagemojii = countryCodeEmoji(countries[Math.floor(Math.random() * countries.length)].code_2.toUpperCase());
               console.log("Violation flag is", flagemojii);
               if(flagemojii)
                 message.react(flagemojii);
