@@ -178,10 +178,10 @@ function validate_gorkblorf_message(message)
   });
 
   // Reset existing reaction
-  console.log(message.reactions);
-  if(message.reactions){
-    message.reactions.forEach(reaction => reaction.remove(client.user.id));
-  }
+  // console.log(message.reactions);
+  // if(message.reactions){
+  //   message.reactions.forEach(reaction => reaction.remove(client.user.id));
+  // }
 
   // Forgive false positives by accumulating violations until we just can't take it any more
   if(num_violations >= max_violations){
