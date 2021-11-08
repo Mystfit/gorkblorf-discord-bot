@@ -44,7 +44,8 @@ let start_seed_messages = ('START_SEED_MESSAGES' in process.env) ? process.env.S
 let puncutation_chance = 5;
 let url_re = /(^|\s)((https?:\/\/)?[\w-]+(\.[\w-]+)+\.?(:\d+)?(\/\S*)?)/gi;
 let mention_re = /\@\w+/gim;
-
+let training_word_re = /[^A-Za-z,.!?-]/gi;
+let dictionary_match_re = /[a-z]/g;
 
 // Discord client with the intents that it will require in order to operate
 const client = new Discord.Client({ intents: [
@@ -149,7 +150,7 @@ function validate_gorkblorf_message(message)
       return;
 
     // Get language match confidences
-    detected_languages = word_language(word);//lngDetector.detect(word);
+    detected_languages = word_language(word.toLowerCase().replace(dictionary_match_re, ''));//lngDetector.detect(word);
     
     // We might not match any existing language (gorkblorf!)
     if(detected_languages.length > 0){
@@ -166,7 +167,7 @@ function validate_gorkblorf_message(message)
     }
 
     if(valid_word)
-      valid_words.push(word);
+      valid_words.push(word.replace(training_word_re, ''));
   });
 
   // Forgive false positives by accumulating violations until we just can't take it any more
