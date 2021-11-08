@@ -46,6 +46,7 @@ let url_re = /(^|\s)((https?:\/\/)?[\w-]+(\.[\w-]+)+\.?(:\d+)?(\/\S*)?)/gi;
 let mention_re = /\@\w+/gim;
 let training_word_re = /[^A-Za-z,.!?'"-]/gi;
 let dictionary_match_re = /[^a-z]/g;
+let digit_emojii = [0️⃣, 1️⃣, 2️⃣, 3️⃣, 4️⃣, 5️⃣, 6️⃣, 7️⃣, 8️⃣, 9️⃣, 🔟];
 
 // Discord client with the intents that it will require in order to operate
 const client = new Discord.Client({ intents: [
@@ -100,6 +101,8 @@ client.on('messageCreate', message => {
             }
           }
         });
+        reaction = number_to_emojii(violation["index"]);
+        message.react(reaction);
       });
     }
 
@@ -143,6 +146,8 @@ function validate_gorkblorf_message(message)
   // Split the sentence into discrete words so we can accumuklate individual gorkblorf violations
   var num_violations = 0;
   split_phrase = clean_message.split(' ')
+
+  var word_idx = 0;
   split_phrase.forEach(word => {
     valid_word = false;
 
@@ -157,7 +162,7 @@ function validate_gorkblorf_message(message)
       // Check the match against the hand-tweaked threshold
       if(detected_languages[0][1] > language_match_threshold){
         num_violations += 1;
-        violations.push({"word": word, "language": detected_languages[0][0]});
+        violations.push({"word": word, "language": detected_languages[0][0], "index": word_idx});
         console.log("Violation:", word + ",", "Language:", detected_languages[0][0]+ ",", "Confidence:", detected_languages[0][1]);
       } else {
         valid_word = true;
@@ -168,6 +173,8 @@ function validate_gorkblorf_message(message)
 
     if(valid_word)
       valid_words.push(word.replace(training_word_re, ''));
+
+    word_idx += 1;
   });
 
   // Forgive false positives by accumulating violations until we just can't take it any more
@@ -213,6 +220,14 @@ function word_language(word)
       violations.push([lang, 1.0]);
   });
   return violations;
+}
+
+function number_to_emojii(num)
+{
+  if(num < digit_emojii.length && num >= 0){
+    return digit_emojii[num];
+  }
+  return 💬;
 }
 
 
