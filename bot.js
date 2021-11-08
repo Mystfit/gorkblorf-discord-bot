@@ -177,6 +177,9 @@ function validate_gorkblorf_message(message)
     word_idx += 1;
   });
 
+  // Reset existing reaction
+  message.remove_reaction('🔴');
+
   // Forgive false positives by accumulating violations until we just can't take it any more
   if(num_violations >= max_violations){
     console.log("Number of Gorkblorf violations:", num_violations);
