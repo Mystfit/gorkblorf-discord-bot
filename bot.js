@@ -44,7 +44,7 @@ let start_seed_messages = ('START_SEED_MESSAGES' in process.env) ? process.env.S
 let puncutation_chance = 5;
 let url_re = /(^|\s)((https?:\/\/)?[\w-]+(\.[\w-]+)+\.?(:\d+)?(\/\S*)?)/gi;
 let mention_re = /\@\w+/gim;
-let training_word_re = /[^A-Za-z,.!?-]/gi;
+let training_word_re = /[^A-Za-z,.!?'"-]/gi;
 let dictionary_match_re = /[^a-z]/g;
 
 // Discord client with the intents that it will require in order to operate
