@@ -46,7 +46,7 @@ let url_re = /(^|\s)((https?:\/\/)?[\w-]+(\.[\w-]+)+\.?(:\d+)?(\/\S*)?)/gi;
 let mention_re = /\@\w+/gim;
 let training_word_re = /[^A-Za-z,.!?'"-]/gi;
 let dictionary_match_re = /[^a-z]/g;
-let digit_emojii = [0️⃣, 1️⃣, 2️⃣, 3️⃣, 4️⃣, 5️⃣, 6️⃣, 7️⃣, 8️⃣, 9️⃣, 🔟];
+let digit_emojii = ["0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
 
 // Discord client with the intents that it will require in order to operate
 const client = new Discord.Client({ intents: [
@@ -227,7 +227,7 @@ function number_to_emojii(num)
   if(num < digit_emojii.length && num >= 0){
     return digit_emojii[num];
   }
-  return 💬;
+  return "💬";
 }
 
 
