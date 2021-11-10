@@ -1,5 +1,6 @@
-module.exports.generate = function(phrase) {
+const fetch = require('sync-fetch')
 
+module.exports.generate = function(phrase) {
     var url = "https://api.hypnogram.xyz/generate";
     var method = "POST";
     var options = {
@@ -29,9 +30,10 @@ module.exports.generate = function(phrase) {
 	            // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
 	            body: JSON.stringify(data)// body data type must match "Content-Type" header
 	        });
-	        resolve(response.json());
+			resolve(response.json());
 	        // parses JSON response into native JavaScript objects
 	    });
 	}
-	return postData(url)
+
+	return postData(url, options);
 };

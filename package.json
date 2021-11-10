@@ -9,8 +9,11 @@
 		"country-language": "^0.1.7",
 		"discord.js": "^13.3.1",
 		"dotenv": "^8.2.0",
+		"install": "^0.13.0",
 		"iso-639-language": "^1.0.1",
 		"languagedetect": "^2.0.0",
-		"markov": "^0.0.7"
+		"markov": "^0.0.7",
+		"node-fetch": "^2.6.6",
+		"sync-fetch": "^0.3.1"
 	}
 }

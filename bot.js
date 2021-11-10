@@ -79,6 +79,8 @@ client.on('messageCreate', message => {
     message.reply("pong");
   }
 
+  console.log("In MessageCreate event");
+
   // Have the bot watch for new messages arriving in a specific channel
   if (message.channel.id === watch_channel || message.channel instanceof Discord.DMChannel){
     
@@ -122,16 +124,35 @@ client.on('messageCreate', message => {
         var response = markov_bot.respond(markov_bot.pick(), 5);
         var suffix = (Math.round(Math.random() * puncutation_chance) > puncutation_chance-1) ? ((Math.random() > 0.5) ? "?" : "!") : "";
         var final_reply = response.join(' ') + suffix;
-       
+        client.user.setActivity(final_reply, { type: 'LISTENING'});
+        
+        filename = final_reply.replace(dictionary_match_re, '').replace(' ', '_') + '.jpg'
         Hypnogram.generate(final_reply.substring(0,70)).then(response => {
           console.log(response);
-          const data = response.split(',')[1]; 
-          const buf = new Buffer.from(data, 'base64');
-          const attachment = new MessageAttachment(buffer, response.replace(dictionary_match_re, '').replace(' ', '') + '.txt');
+          try{
+            const data = response.image;
+            const buffer = new Buffer.from(data, 'base64');
+            const attachment = new Discord.MessageAttachment(buffer, filename);
+            let userMessage = new Discord.MessageEmbed().setDescription(message.content);
+            userMessage.setTitle(final_reply);
+            userMessage.setImage('attachment://' + filename);
+
+            //var payload = new Discord.MessagePayload(message.channel, {"content": final_reply});//, {'reply': message});
+            // payload.content = final_reply;
+            //payload.embed = [userMessage];
+            console.log(userMessage);
+            message.reply({embeds: [userMessage], files: [attachment]});
+            // payload.files = [attachment];
+            // console.log(payload.files);
+            // payload.resolveFiles(attachment).then(payload_res => {
+            //   console.log(payload_res);
+            //   message.reply(payload_res);
+            // });
+          } catch (err){
+            console.log("Couldn't parse hypnogram image response", err);
+          }
         });
 
-        message.reply(final_reply);
-        client.user.setActivity(final_reply, { type: 'LISTENING'});
       } else {
         console.log("No key returned from markov chain. Has it been seeded yet?");
       }
