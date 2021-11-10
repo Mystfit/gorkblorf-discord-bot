@@ -125,6 +125,9 @@ client.on('messageCreate', message => {
         var suffix = (Math.round(Math.random() * puncutation_chance) > puncutation_chance-1) ? ((Math.random() > 0.5) ? "?" : "!") : "";
         var final_reply = response.join(' ') + suffix;
         client.user.setActivity(final_reply, { type: 'LISTENING'});
+
+        // Let user know we are generating a response
+        message.react('💭');
         
         filename = final_reply.replace(dictionary_match_re, '').replace(' ', '_') + '.jpg'
         Hypnogram.generate(final_reply.substring(0,70))
@@ -143,6 +146,9 @@ client.on('messageCreate', message => {
             message.reply({embeds: [userMessage], files: [attachment]});
           } catch(err){
             console.log("Failed to reply to message", err);
+            message.react('❔');
+          } finally {
+            message.reactions.resolve('💭').users.remove(client.user.id);
           }
         })
         .catch(err => {
