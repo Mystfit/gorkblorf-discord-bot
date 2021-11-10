@@ -127,30 +127,32 @@ client.on('messageCreate', message => {
         client.user.setActivity(final_reply, { type: 'LISTENING'});
         
         filename = final_reply.replace(dictionary_match_re, '').replace(' ', '_') + '.jpg'
-        Hypnogram.generate(final_reply.substring(0,70)).then(response => {
+        Hypnogram.generate(final_reply.substring(0,70))
+        .catch(err => {
+          console.log("Couldn't process hypnogram:", err);})
+        .then(response => {
           console.log(response);
-          try{
-            const data = response.image;
-            const buffer = new Buffer.from(data, 'base64');
-            const attachment = new Discord.MessageAttachment(buffer, filename);
-            let userMessage = new Discord.MessageEmbed().setDescription(message.content);
-            userMessage.setTitle(final_reply);
-            userMessage.setImage('attachment://' + filename);
+          const data = response.image;
+          const buffer = new Buffer.from(data, 'base64');
+          const attachment = new Discord.MessageAttachment(buffer, filename);
+          let userMessage = new Discord.MessageEmbed().setDescription(message.content);
+          userMessage.setTitle(final_reply);
+          userMessage.setImage('attachment://' + filename);
 
-            //var payload = new Discord.MessagePayload(message.channel, {"content": final_reply});//, {'reply': message});
-            // payload.content = final_reply;
-            //payload.embed = [userMessage];
-            console.log(userMessage);
-            message.reply({embeds: [userMessage], files: [attachment]});
-            // payload.files = [attachment];
-            // console.log(payload.files);
-            // payload.resolveFiles(attachment).then(payload_res => {
-            //   console.log(payload_res);
-            //   message.reply(payload_res);
-            // });
-          } catch (err){
-            console.log("Couldn't parse hypnogram image response", err);
-          }
+          //var payload = new Discord.MessagePayload(message.channel, {"content": final_reply});//, {'reply': message});
+          // payload.content = final_reply;
+          //payload.embed = [userMessage];
+          console.log(userMessage);
+          message.reply({embeds: [userMessage], files: [attachment]});
+          // payload.files = [attachment];
+          // console.log(payload.files);
+          // payload.resolveFiles(attachment).then(payload_res => {
+          //   console.log(payload_res);
+          //   message.reply(payload_res);
+          // });
+        })
+        .catch(err => {
+          console.log("Couldn't process hypnogram:", err);
         });
 
       } else {
