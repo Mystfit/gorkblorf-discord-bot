@@ -123,11 +123,11 @@ client.on('messageCreate', message => {
         var suffix = (Math.round(Math.random() * puncutation_chance) > puncutation_chance-1) ? ((Math.random() > 0.5) ? "?" : "!") : "";
         var final_reply = response.join(' ') + suffix;
        
-        Hypnogram.generate(final_reply.substring(0,70).then(response => {
+        Hypnogram.generate(final_reply.substring(0,70)).then(response => {
           console.log(response);
           const data = response.split(',')[1]; 
           const buf = new Buffer.from(data, 'base64');
-          const attachment = new MessageAttachment(buffer, response + response.replace(dictionary_match_re, '') + '.txt');
+          const attachment = new MessageAttachment(buffer, response.replace(dictionary_match_re, '').replace(' ', '') + '.txt');
         });
 
         message.reply(final_reply);
