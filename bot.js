@@ -127,7 +127,7 @@ client.on('messageCreate', message => {
           console.log(response);
           const data = response.split(',')[1]; 
           const buf = new Buffer.from(data, 'base64');
-          const attachment = new MessageAttachment(buffer, response + response.replace(dictionary_match_re, '')'.txt');
+          const attachment = new MessageAttachment(buffer, response + response.replace(dictionary_match_re, '') + '.txt');
         });
 
         message.reply(final_reply);
