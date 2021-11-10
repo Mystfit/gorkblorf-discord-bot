@@ -9,11 +9,11 @@ const CountryLanguage = require('country-language');
 const Iso639Type = require('iso-639-language');
 const iso639_1 = Iso639Type["default"].getType(1);
 const { countryCodeEmoji, emojiCountryCode } = require('country-code-emoji');
-const Hypnogram = require('hypnogram');
 
 var markov = require('markov');
 var markov_bot = markov();
 var Trie = require('./trie');
+const Hypnogram = require('./hypnogram');
 
 let languages = {};
 p = path.resolve(__dirname, "languages");
