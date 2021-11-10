@@ -131,30 +131,19 @@ client.on('messageCreate', message => {
         .catch(err => {
           console.log("Couldn't process hypnogram:", err);})
         .then(response => {
-          console.log(response);
+          console.log("Received hypnogram for", final_reply, " - Creating embed message");
           const data = response.image;
           const buffer = new Buffer.from(data, 'base64');
           const attachment = new Discord.MessageAttachment(buffer, filename);
-          let userMessage = new Discord.MessageEmbed().setDescription(message.content);
+          let userMessage = new Discord.MessageEmbed().setDescription("http://hypnogram.xyz");
           userMessage.setTitle(final_reply);
           userMessage.setImage('attachment://' + filename);
-
-          //var payload = new Discord.MessagePayload(message.channel, {"content": final_reply});//, {'reply': message});
-          // payload.content = final_reply;
-          //payload.embed = [userMessage];
-          console.log(userMessage);
 
           try{
             message.reply({embeds: [userMessage], files: [attachment]});
           } catch(err){
             console.log("Failed to reply to message", err);
           }
-          // payload.files = [attachment];
-          // console.log(payload.files);
-          // payload.resolveFiles(attachment).then(payload_res => {
-          //   console.log(payload_res);
-          //   message.reply(payload_res);
-          // });
         })
         .catch(err => {
           console.log("Couldn't process hypnogram:", err);
