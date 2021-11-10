@@ -9,7 +9,7 @@ module.exports.generate = function(phrase) {
 
     // Example POST method implementation:
     function postData(url='', data={}) {
-    	return new Promise(resolve = {
+    	return new Promise(resolve => {
 	        // Default options are marked with *
 	        const response = fetch(url, {
 	            method: 'POST',
@@ -31,6 +31,7 @@ module.exports.generate = function(phrase) {
 	        });
 	        resolve(response.json());
 	        // parses JSON response into native JavaScript objects
-	    }
+	    });
 	}
+	return postData(url)
 };
