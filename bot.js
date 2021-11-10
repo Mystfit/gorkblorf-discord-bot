@@ -143,7 +143,12 @@ client.on('messageCreate', message => {
           // payload.content = final_reply;
           //payload.embed = [userMessage];
           console.log(userMessage);
-          message.reply({embeds: [userMessage], files: [attachment]});
+
+          try{
+            message.reply({embeds: [userMessage], files: [attachment]});
+          } catch(err){
+            console.log("Failed to reply to message", err);
+          }
           // payload.files = [attachment];
           // console.log(payload.files);
           // payload.resolveFiles(attachment).then(payload_res => {
