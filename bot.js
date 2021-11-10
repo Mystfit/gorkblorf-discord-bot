@@ -9,6 +9,7 @@ const CountryLanguage = require('country-language');
 const Iso639Type = require('iso-639-language');
 const iso639_1 = Iso639Type["default"].getType(1);
 const { countryCodeEmoji, emojiCountryCode } = require('country-code-emoji');
+const Hypnogram = require('hypnogram');
 
 var markov = require('markov');
 var markov_bot = markov();
@@ -121,6 +122,14 @@ client.on('messageCreate', message => {
         var response = markov_bot.respond(markov_bot.pick(), 5);
         var suffix = (Math.round(Math.random() * puncutation_chance) > puncutation_chance-1) ? ((Math.random() > 0.5) ? "?" : "!") : "";
         var final_reply = response.join(' ') + suffix;
+       
+        Hypnogram.generate(final_reply.substring(0,70).then(response => {
+          console.log(response);
+          const data = response.split(',')[1]; 
+          const buf = new Buffer.from(data, 'base64');
+          const attachment = new MessageAttachment(buffer, response + response.replace(dictionary_match_re, '')'.txt');
+        });
+
         message.reply(final_reply);
         client.user.setActivity(final_reply, { type: 'LISTENING'});
       } else {
@@ -129,7 +138,6 @@ client.on('messageCreate', message => {
     }
   }
 });
-
 
 function validate_gorkblorf_message(message)
 {
