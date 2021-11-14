@@ -2,6 +2,7 @@ require('dotenv').config();
 var fs = require('fs');
 var path = require('path');
 
+//todo move the constants to an external file in a var Constants = {}
 const Discord = require('discord.js');
 const LanguageDetect = require('languagedetect');
 const lngDetector = new LanguageDetect();
@@ -52,6 +53,7 @@ const mention_re = /\@\w+/gim;
 const training_word_re = /[^A-Za-z,.!?'"-]/gi;
 const dictionary_match_re = /[^a-z]/g;
 const digit_emojii = ["0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
+const mutationChance = .01;
 
 // Discord client with the intents that it will require in order to operate
 const client = new Discord.Client({
@@ -94,8 +96,8 @@ function onMessageCreated(message) {
     if (message.channel.id === watch_channel || message.channel instanceof Discord.DMChannel) {
 
         // Make sure message is a valid gorkblorf and get violating words
-        message_parsed = validate_gorkblorf_message(message);
-        validated_message = message_parsed["valid"].join(' ');
+        let message_parsed = validate_gorkblorf_message(message);
+        let validated_message = message_parsed["valid"].join(' ');
 
         if (message_parsed.invalid.length >= max_violations) {
             message_parsed.invalid.forEach(violation => {
@@ -104,7 +106,7 @@ function onMessageCreated(message) {
             });
         }
 
-        seedMarkovChain(message);
+        seedMarkovChain(message, message_parsed, validated_message);
 
         // Watch for direct mentions of the bot and reply to the user
         if (isMentioned(message)) {
@@ -127,7 +129,14 @@ function isMentioned(message) {
 function respond(message) {
     var response = markov_bot.respond(markov_bot.pick(), 5);
 
-    placeholder //take the return value of getNewWords(response), and check it against the dictionary to make sure we haven't created any real words, and then add to the Markov chain somehow
+    // take the return value of getNewWords(response),
+    // and check it against the dictionary to make sure we haven't created any real words,
+    // and then add to the Markov chain somehow
+    // we don't use seedMarkovChain because that filters out posts by the bot
+    markov_bot.seed(
+        validate_gorkblorf_message(
+            getNewWords(response)["valid"].join()));
+
     var suffix = (Math.round(Math.random() * puncutation_chance) > puncutation_chance - 1) ?
     ((Math.random() > 0.5) ?
         "?" :
@@ -156,7 +165,7 @@ function respond(message) {
     });
 }
 
-function seedMarkovChain(message) {
+function seedMarkovChain(message, message_parsed, validated_message) {
     // Train the markov chain with the new data - ignore ourselves so we don't weight probabilities
     if (message_parsed["invalid"].length < max_violations &&
         message_parsed["valid"].length >= max_violations &&
@@ -329,19 +338,20 @@ async function lots_of_messages_getter(channel, limit = 500) {
 function getNewWords(message) {
     let words = message.split(" ");
     let parentPairs = [];
-
     let children = [];
     let mutatedChildren = [];
-    const mutationChance = .01;
 
-    for (let i = 0; i < birthRate; i++) {
+    if (Math.random() <= mutationChance) {
         let a = Math.floor(Math.random() * words.length);
-
         let b = Math.floor(Math.random() * words.length);
 
         if (a == b) {
             a++;
+            if (a >= words.length) {
+                a = 0
+            }
         }
+		
         parentPairs.push({
             a: a,
             b: b
@@ -349,12 +359,10 @@ function getNewWords(message) {
     }
 
     parentPairs.forEach(function (pair) {
-        if (Math.random() <= mutationChance) {
-            let offspring = recombinate(pair.a, pair.b);
+        let offspring = recombinate(pair.a, pair.b);
 
-            children.push(chromosomalDrift(mutate(offspring.a)));
-            children.push(chromosomalDrift(mutate(offspring.b)));
-        }
+        children.push(chromosomalDrift(mutate(offspring.a)));
+        children.push(chromosomalDrift(mutate(offspring.b)));
     });
 
     return children;
@@ -366,8 +374,8 @@ function recombinate(a, b) {
     var pivotA = 1 + Math.floor(Math.random() * (a.length - 2));
     var pivotB = 1 + Math.floor(Math.random() * (b.length - 2));
 
-    var offspringA = a.substr(0, pivotA) + b.substr(pivotB + 1);
-    var offspringB = b.substr(0, pivotB) + a.substr(pivotA + 1);
+    var offspringA = a.substr(0, pivotA) + b.substr(pivotB);
+    var offspringB = b.substr(0, pivotB) + a.substr(pivotA);
 
     return {
         a: offspringA,
