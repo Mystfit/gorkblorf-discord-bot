@@ -135,7 +135,7 @@ function respond(message) {
     // we don't use seedMarkovChain because that filters out posts by the bot
     markov_bot.seed(
         validate_gorkblorf_message(
-            getNewWords(response)["valid"].join()));
+            getNewWords(response.join(" "))["valid"].join()));
 
     var suffix = (Math.round(Math.random() * puncutation_chance) > puncutation_chance - 1) ?
     ((Math.random() > 0.5) ?
