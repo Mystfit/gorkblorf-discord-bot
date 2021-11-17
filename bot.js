@@ -99,19 +99,14 @@ function onMessageCreated(message) {
         let message_parsed = validate_gorkblorf_message(message);
         let validated_message = message_parsed["valid"].join(' ');
 
-        if (message_parsed.invalid.length >= max_violations) {
-            message_parsed.invalid.forEach(violation => {
-                reaction = number_to_emojii(violation["index"]);
-                message.react(reaction);
-            });
-        }
-
         seedMarkovChain(message, message_parsed, validated_message);
 
         // Watch for direct mentions of the bot and reply to the user
         if (isMentioned(message)) {
             var key = markov_bot.pick();
             if (key) {
+				// Let user know we are generating a response
+				message.react('💭');
                 respond(message);
             } else {
                 console.log("No key returned from markov chain. Has it been seeded yet?");
@@ -147,9 +142,6 @@ function respond(message) {
     client.user.setActivity(final_reply, {
         type: 'LISTENING'
     });
-
-    // Let user know we are generating a response
-    message.react('💭');
 
     filename = final_reply
         .replace(dictionary_match_re, '')
