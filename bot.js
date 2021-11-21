@@ -50,10 +50,11 @@ const start_seed_messages = ('START_SEED_MESSAGES' in process.env) ? process.env
 const puncutation_chance = 5;
 const url_re = /(^|\s)((https?:\/\/)?[\w-]+(\.[\w-]+)+\.?(:\d+)?(\/\S*)?)/gi;
 const mention_re = /\@\w+/gim;
-const training_word_re = /[^A-Za-z,.!?'"-]/gi;
+const training_word_re = /[^A-Za-z.!?'"-]/gi;
+const hypnogram_query_re = /[^A-Za-z]/gi
 const dictionary_match_re = /[^a-z]/g;
 const digit_emojii = ["0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
-const mutationChance = .01;
+const mutationChance = .05;
 
 // Discord client with the intents that it will require in order to operate
 const client = new Discord.Client({
@@ -105,9 +106,9 @@ function onMessageCreated(message) {
         if (isMentioned(message)) {
             var key = markov_bot.pick();
             if (key) {
-				// Let user know we are generating a response
-				message.react('💭');
-                respond(message);
+        				// Let user know we are generating a response
+        				message.react('💭').then(res => respond(message));
+                // respond(message);
             } else {
                 console.log("No key returned from markov chain. Has it been seeded yet?");
             }
@@ -128,30 +129,40 @@ function respond(message) {
     // and check it against the dictionary to make sure we haven't created any real words,
     // and then add to the Markov chain somehow
     // we don't use seedMarkovChain because that filters out posts by the bot
-    markov_bot.seed(
-        validate_gorkblorf_message(
-            getNewWords(response.join(" "))["valid"].join()));
+    var validated_message = validate_gorkblorf_message(message);
+    
+    var newWords = getNewWords(validated_message["valid"].join(" "));
+    if(newWords.length > 0){
+      console.log('New words generated: ' + newWords.join(' '));
+      markov_bot.seed(newWords.join(" "));
+    }
 
     var suffix = (Math.round(Math.random() * puncutation_chance) > puncutation_chance - 1) ?
     ((Math.random() > 0.5) ?
         "?" :
         "!") :
     "";
-    var final_reply = response.join(' ') + suffix;
+    var final_reply = response + suffix;
+    final_reply = final_reply.replace(',', ' ')
 
     client.user.setActivity(final_reply, {
         type: 'LISTENING'
     });
 
+    hypnogram_query = final_reply.replace(dictionary_match_re, ' ').substring(0, 70)
     filename = final_reply
         .replace(dictionary_match_re, '')
         .replace(' ', '_') + '.jpg';
 
-    Hypnogram.generate(final_reply.substring(0, 70))
+    console.log('Submitting ' + hypnogram_query + ' to hypnogram service');
+    Hypnogram.generate(hypnogram_query)
     .catch(err => {
         console.log("Couldn't process hypnogram:", err);
     })
-    .then(writeImage)
+    .then(res => {
+      writeImage(res, final_reply, message);
+      message.reactions.resolve('💭').users.remove(client.user.id);
+    })
     .catch(err => {
         console.log("Couldn't process hypnogram:", err);
     });
@@ -167,13 +178,18 @@ function seedMarkovChain(message, message_parsed, validated_message) {
     }
 }
 
-function writeImage(response) {
-    console.log("Received hypnogram for", final_reply, " - Creating embed message");
+function writeImage(response, query, message) {
+    console.log("Received hypnogram for", query, " - Creating embed message");
+    console.log(response);
+    if(response.error_code == 'GENERATION_FAILED'){
+      message.react("❔");
+      return;
+    }
     const data = response.image;
     const buffer = new Buffer.from(data, 'base64');
     const attachment = new Discord.MessageAttachment(buffer, filename);
     let userMessage = new Discord.MessageEmbed().setDescription("http://hypnogram.xyz");
-    userMessage.setTitle(final_reply);
+    userMessage.setTitle(query);
     userMessage.setImage('attachment://' + filename);
 
     try {
@@ -184,9 +200,6 @@ function writeImage(response) {
     } catch (err) {
         console.log("Failed to reply to message", err);
         message.react('❔');
-    }
-    finally {
-        message.reactions.resolve('💭').users.remove(client.user.id);
     }
 }
 
@@ -345,8 +358,8 @@ function getNewWords(message) {
         }
 		
         parentPairs.push({
-            a: a,
-            b: b
+            a: words[a],
+            b: words[b]
         });
     }
 
@@ -357,7 +370,7 @@ function getNewWords(message) {
         children.push(chromosomalDrift(mutate(offspring.b)));
     });
 
-    return children;
+    return (children.length > 0) ? children : words;
 }
 
 function recombinate(a, b) {
