@@ -143,13 +143,13 @@ function respond(message) {
         "!") :
     "";
     var final_reply = response + suffix;
-    final_reply = final_reply.replace(',', ' ')
+    final_reply = final_reply.replace(',', ' ');
 
     client.user.setActivity(final_reply, {
         type: 'LISTENING'
     });
 
-    hypnogram_query = final_reply.replace(dictionary_match_re, ' ').substring(0, 70)
+    hypnogram_query = final_reply.replace(dictionary_match_re, ' ').replace(/\s\s+/g, ' ').substring(0, 70);
     filename = final_reply
         .replace(dictionary_match_re, '')
         .replace(' ', '_') + '.jpg';
