@@ -42,7 +42,8 @@ fs.readdirSync(p).forEach(file => {
 console.log("Loaded languages", languages);
 
 // Constants
-const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 _-*(){}/\\?[]&^%$#@!`~";
+const specialchars = "ÀÁÂÃÄÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÜÝßÞßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿĀāĂăĄąĆĆćĈĉĊċČčĎďĐđĒēĔĕĖėęĚěĜĝĞğĠĢģĤĐĥĦħĨĨĩĪīĬĭĮįİıĲĲĳĴĵĶķĸĸĹĺĻļľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏŐőŒœœŔŕŖŗŘřŚśŜŝŞşŠšŢţŤŦŧũŪūŬŭŮůŰűŲųŴŵŶŸŹźŻżŽžſƀƁƂƃƄƅƆƇƈƉƊƋƌƍƎƏƐƑƒƓƔƕƖƗƘƙƚƛƜƝƞƟƠơƢƣƤƥƦƧƨƩƪƫƬƭƮƯưƱƲƳƴƵƶƷƸƹƺƾƿǂ";
+const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-" + specialchars;
 const watch_channel = ('CHANNEL' in process.env) ? process.env.CHANNEL : "905706918243364865";
 const language_match_threshold = ('LANGUAGE_MATCH_THRESHOLD' in process.env) ? process.env.LANGUAGE_MATCH_THRESHOLD : 0.4;
 const max_violations = ('MAX_GORKBLORF_VIOLATIONS' in process.env) ? process.env.MAX_GORKBLORF_VIOLATIONS : 1;
