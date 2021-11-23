@@ -185,18 +185,24 @@ function writeImage(response, query, message) {
       message.react("❔");
       return;
     }
-    const data = response.image;
-    const buffer = new Buffer.from(data, 'base64');
-    const attachment = new Discord.MessageAttachment(buffer, filename);
-    let userMessage = new Discord.MessageEmbed().setDescription("http://hypnogram.xyz");
+    let userMessage = new Discord.MessageEmbed()
+    userMessage.setDescription("http://hypnogram.xyz");
     userMessage.setTitle(query);
-    userMessage.setImage('attachment://' + filename);
+
+    // Convert image data to an embed
+    const data = response.image;
+    const attachment = null;
+    const payload = {};
+    if(data){
+        const buffer = new Buffer.from(data, 'base64');
+        attachment = new Discord.MessageAttachment(buffer, filename);
+        userMessage.setImage('attachment://' + filename);
+        payload.files = [attachment];
+    }
+    payload.embeds = [userMessage];
 
     try {
-        message.reply({
-            embeds: [userMessage],
-            files: [attachment]
-        });
+        message.reply(payload);
     } catch (err) {
         console.log("Failed to reply to message", err);
         message.react('❔');
