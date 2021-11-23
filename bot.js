@@ -186,7 +186,6 @@ function writeImage(response, query, message) {
       return;
     }
     let userMessage = new Discord.MessageEmbed()
-    userMessage.setDescription("http://hypnogram.xyz");
     userMessage.setTitle(query);
 
     // Convert image data to an embed
@@ -196,6 +195,7 @@ function writeImage(response, query, message) {
     if(data){
         const buffer = new Buffer.from(data, 'base64');
         attachment = new Discord.MessageAttachment(buffer, filename);
+        userMessage.setDescription("http://hypnogram.xyz");
         userMessage.setImage('attachment://' + filename);
         payload.files = [attachment];
     }
