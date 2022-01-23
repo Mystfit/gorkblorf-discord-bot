@@ -68,6 +68,9 @@ const client = new Discord.Client({
     partials: ["CHANNEL"]
 });
 
+var userWordList = new Map();
+// key: "userid", value: Set("words")
+
 // Login to Discord
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
@@ -107,9 +110,15 @@ function onMessageCreated(message) {
         if (isMentioned(message)) {
             var key = markov_bot.pick();
             if (key) {
+<<<<<<< Updated upstream
         				// Let user know we are generating a response
         				message.react('💭').then(res => respond(message));
                 // respond(message);
+=======
+                // Let user know we are generating a response
+                message.react('💭');
+                respond(message);
+>>>>>>> Stashed changes
             } else {
                 console.log("No key returned from markov chain. Has it been seeded yet?");
             }
@@ -176,9 +185,14 @@ function seedMarkovChain(message, message_parsed, validated_message) {
         message.author.id != client.user.id) {
         console.log("Adding new message to markov database:", validated_message);
         markov_bot.seed(validated_message);
+
+        // add to user word list, so we can keep track of who taught which words to the bot
+		
+		addToWordList(message.author.id, validated_message.split(" "));
     }
 }
 
+<<<<<<< Updated upstream
 function writeImage(response, query, message) {
     console.log("Received hypnogram for", query, " - Creating embed message");
     console.log(response);
@@ -190,6 +204,23 @@ function writeImage(response, query, message) {
     userMessage.setTitle(query);
 
     // Convert image data to an embed
+=======
+function addToWordList(userId, wordList /* Array */) {
+    var words = userWordList.get(userId);
+    if (!!words) {
+        words = new Set();
+    }
+
+    wordList.forEach(function (word) {
+        words.add(word);
+    });
+
+    userWordList.set(userId, words);
+}
+
+function writeImage(response) {
+    console.log("Received hypnogram for", final_reply, " - Creating embed message");
+>>>>>>> Stashed changes
     const data = response.image;
     const attachment = null;
     const payload = {};
@@ -363,7 +394,7 @@ function getNewWords(message) {
                 a = 0
             }
         }
-		
+
         parentPairs.push({
             a: words[a],
             b: words[b]
