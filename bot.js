@@ -78,6 +78,7 @@ client.on('ready', () => {
         type: 'LISTENING'
     });
     populate_markov_from_channel(watch_channel, start_seed_messages);
+    populate_commands();
 });
 
 try {
@@ -85,6 +86,38 @@ try {
 } catch (err) {
     console.log("Couldn't login to Discord", err);
 }
+
+// Command registration
+client.on('interactionCreate', async interaction => {
+    if (!interaction.isCommand())
+        return;
+
+    const {
+        commandName
+    } = interaction;
+
+    if (commandName === 'ping') {
+        await interaction.reply('Pong!');
+    } else if (commandName === 'server') {
+        await interaction.reply(`Server name: ${interaction.guild.name}\nTotal members: ${interaction.guild.memberCount}`);
+    } else if (commandName === 'user') {
+        await interaction.reply(`Your tag: ${interaction.user.tag}\nYour id: ${interaction.user.id}`);
+    } else if (commandName === 'mywords') {
+        var words_str = "none";
+        let words = userStatistics.get(interaction.user.id)?.words ?? null;
+        if(words)
+            words_str = Array.from(words).join('\n')
+
+        var violations_str = "none";
+        let violations = userStatistics.get(interaction.user.id)?.violations ?? null;
+        if(violations)
+            violations_str = violations.map(violation => `${violation.timestamp.toString()}: ${violation.word}`).join('\n');
+
+        var response = `**Farhg goo flemsteen:**\n${words_str}.\n`
+        response += `**Zarxistik vez nerkleck:**\n${violations_str}.`
+        await interaction.reply(response);
+    }
+});
 
 // Direct message the bot
 client.on('messageCreate', onMessageCreated);
@@ -109,7 +142,7 @@ function onMessageCreated(message) {
         // add to user word list, so we can keep track of who taught which words to the bot
 		addToWordList(message.author.id, message_parsed["valid"]);
 		// keep track of violations
-		addToViolations(userId, message_parsed["invalid"]);
+		addToViolations(message.author.id, message_parsed["invalid"]);
 
         // Watch for direct mentions of the bot and reply to the user
         if (isMentioned(message)) {
@@ -157,7 +190,8 @@ function respond(message) {
         type: 'LISTENING'
     });
 
-    hypnogram_query = final_reply.replace(dictionary_match_re, ' ').replace(/\s\s+/g, ' ').substring(0, 70);
+    // Disabling hypnogram until it can be called via slash command
+    /*hypnogram_query = final_reply.replace(dictionary_match_re, ' ').replace(/\s\s+/g, ' ').substring(0, 70);
     filename = final_reply
         .replace(dictionary_match_re, '')
         .replace(' ', '_') + '.jpg';
@@ -174,6 +208,7 @@ function respond(message) {
     .catch(err => {
         console.log("Couldn't process hypnogram:", err);
     });
+    */
 }
 
 function seedMarkovChain(message, message_parsed, validated_message) {
@@ -187,11 +222,8 @@ function seedMarkovChain(message, message_parsed, validated_message) {
 }
 
 function addToWordList(userId, wordList /* Array */) {
-    var stats = userStatistics.get(userId);
-    var words = stats.words;
-    if (!!words) {
-        words = new Set();
-    }
+    var stats = userStatistics.get(userId) ?? {"words": new Set(), "violations": []};
+    var words = stats?.words;
 
     wordList.forEach(function (word) {
         words.add(word);
@@ -201,16 +233,17 @@ function addToWordList(userId, wordList /* Array */) {
     userStatistics.set(userId, stats);
 }
 
-function addToViolations(userId, wordList /* Array */) {
-    var stats = userStatistics.get(userId);
+function addToViolations(userId, violationList /* Array */) {
+    var stats = userStatistics.get(userId) ?? {"words": new Set(), "violations": []}
     var violations = stats.violations;
 	
     if (!!violations) {
         violations = [];
     }
 
-    wordList.forEach(function (word) {
-        violations.push({word: word, timestamp: Date.now()});
+    violationList.forEach(function (violation) {
+        violation.timestamp = new Date(Date.now());
+        violations.push(violation);
     });
 
 	stats.violations = violations;
@@ -318,6 +351,13 @@ async function populate_markov_from_channel(channel, num_messages) {
     }).catch(error => {
         console.log("Couldn't access channel. Reason:", error);
     });
+}
+
+function populate_commands(){
+    client.api.applications(client.user.id).guilds(process.env.GUILD_ID).commands.post({data: {
+        name: 'GBwords',
+        description: 'Gnward wol trelwarf'
+    }});
 }
 
 function word_language(word) {
