@@ -68,8 +68,8 @@ const client = new Discord.Client({
     partials: ["CHANNEL"]
 });
 
-var userWordList = new Map();
-// key: "userid", value: Set("words")
+var userStatistics = new Map();
+// key: "userid", value: {words: Set("words"), violations: [{key: "word", value: timestamp}]}
 
 // Login to Discord
 client.on('ready', () => {
@@ -106,19 +106,17 @@ function onMessageCreated(message) {
 
         seedMarkovChain(message, message_parsed, validated_message);
 
+        // add to user word list, so we can keep track of who taught which words to the bot
+		addToWordList(message.author.id, message_parsed["valid"]);
+		// keep track of violations
+		addToViolations(userId, message_parsed["invalid"]);
+
         // Watch for direct mentions of the bot and reply to the user
         if (isMentioned(message)) {
             var key = markov_bot.pick();
             if (key) {
-<<<<<<< Updated upstream
         				// Let user know we are generating a response
         				message.react('💭').then(res => respond(message));
-                // respond(message);
-=======
-                // Let user know we are generating a response
-                message.react('💭');
-                respond(message);
->>>>>>> Stashed changes
             } else {
                 console.log("No key returned from markov chain. Has it been seeded yet?");
             }
@@ -185,14 +183,40 @@ function seedMarkovChain(message, message_parsed, validated_message) {
         message.author.id != client.user.id) {
         console.log("Adding new message to markov database:", validated_message);
         markov_bot.seed(validated_message);
-
-        // add to user word list, so we can keep track of who taught which words to the bot
-		
-		addToWordList(message.author.id, validated_message.split(" "));
     }
 }
 
-<<<<<<< Updated upstream
+function addToWordList(userId, wordList /* Array */) {
+    var stats = userStatistics.get(userId);
+    var words = stats.words;
+    if (!!words) {
+        words = new Set();
+    }
+
+    wordList.forEach(function (word) {
+        words.add(word);
+    });
+
+	stats.words = words;
+    userStatistics.set(userId, stats);
+}
+
+function addToViolations(userId, wordList /* Array */) {
+    var stats = userStatistics.get(userId);
+    var violations = stats.violations;
+	
+    if (!!violations) {
+        violations = [];
+    }
+
+    wordList.forEach(function (word) {
+        violations.push({word: word, timestamp: Date.now()});
+    });
+
+	stats.violations = violations;
+    userStatistics.set(userId, stats);
+}
+
 function writeImage(response, query, message) {
     console.log("Received hypnogram for", query, " - Creating embed message");
     console.log(response);
@@ -204,41 +228,6 @@ function writeImage(response, query, message) {
     userMessage.setTitle(query);
 
     // Convert image data to an embed
-=======
-function addToWordList(userId, wordList /* Array */) {
-    var words = userWordList.get(userId);
-    if (!!words) {
-        words = new Set();
-    }
-
-    wordList.forEach(function (word) {
-        words.add(word);
-    });
-
-    userWordList.set(userId, words);
-}
-
-function writeImage(response) {
-    console.log("Received hypnogram for", final_reply, " - Creating embed message");
->>>>>>> Stashed changes
-    const data = response.image;
-    const attachment = null;
-    const payload = {};
-    if(data){
-        const buffer = new Buffer.from(data, 'base64');
-        attachment = new Discord.MessageAttachment(buffer, filename);
-        userMessage.setDescription("http://hypnogram.xyz");
-        userMessage.setImage('attachment://' + filename);
-        payload.files = [attachment];
-    }
-    payload.embeds = [userMessage];
-
-    try {
-        message.reply(payload);
-    } catch (err) {
-        console.log("Failed to reply to message", err);
-        message.react('❔');
-    }
 }
 
 function validate_gorkblorf_message(message) {
