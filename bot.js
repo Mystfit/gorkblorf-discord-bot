@@ -102,13 +102,13 @@ client.on('interactionCreate', async interaction => {
         await interaction.reply(`Server name: ${interaction.guild.name}\nTotal members: ${interaction.guild.memberCount}`);
     } else if (commandName === 'user') {
         await interaction.reply(`Your tag: ${interaction.user.tag}\nYour id: ${interaction.user.id}`);
-    } else if (commandName === 'mywords') {
-        var words_str = "none";
+    } else if (commandName === 'gorkblorfwords') {
+        var words_str = "";
         let words = userStatistics.get(interaction.user.id)?.words ?? null;
         if(words)
             words_str = Array.from(words).join('\n')
 
-        var violations_str = "none";
+        var violations_str = "";
         let violations = userStatistics.get(interaction.user.id)?.violations ?? null;
         if(violations)
             violations_str = violations.map(violation => `${violation.timestamp.toString()}: ${violation.word}`).join('\n');
@@ -355,7 +355,7 @@ async function populate_markov_from_channel(channel, num_messages) {
 
 function populate_commands(){
     client.api.applications(client.user.id).guilds(process.env.GUILD_ID).commands.post({data: {
-        name: 'GBwords',
+        name: 'gorkblorfwords',
         description: 'Gnward wol trelwarf'
     }});
 }
