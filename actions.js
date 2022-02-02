@@ -27,8 +27,8 @@ const statistics = new Statistics();
 const markov_bot = markov();
 
 var Actions = {
-    commands: ["displayCurrentUserStatisticsMessage", "getRandomImage"],
-
+    //commands should return {content: "", ephemeral: false}
+    commands: ["getCurrentUserStatisticsMessage", "getRandomImage"],
     read: read,
     reply: reply,
     mutateVocab: mutateVocab,
@@ -36,7 +36,7 @@ var Actions = {
     getText: getText,
     getImage: getImage,
     getRandomImage: getRandomImage,
-    displayCurrentUserStatisticsMessage: displayCurrentUserStatisticsMessage,
+    getCurrentUserStatisticsMessage: getCurrentUserStatisticsMessage,
     getStatisticsMessage: getStatisticsMessage
 }
 
@@ -155,32 +155,62 @@ function getText(message, length) {
     }
 }
 
-function getImage(query) {
+async function getImage(query) {
     console.log('Submitting ' + query + ' to hypnogram service');
-    return Hypnogram.generate(query)
-    .then(function (result) {
-        Hypnogram.download(result.image_id)
-        .then(function (result) {
-            //decode?
-        })
-        .catch(function (e) {
+    let result;
+
+    try {
+        result = await Hypnogram.generate(query)
+    } catch (e) {
+        console.log("Couldn't process hypnogram:", e);
+    }
+
+    console.log("getImage result", result);
+    console.log("getImage result.image_id", result.image_id);
+
+    if (result.error_code && result.error_code === "STANDARD_QUEUE_FULL") {
+        console.log("Hypnogram is busy");
+
+        return "busy";
+    } else {
+        try {
+            return await Hypnogram.download(result.image_id);
+        } catch (e) {
             console.log("failed to download image", e);
-        });
-    })
-    .catch(err => {
-        console.log("Couldn't process hypnogram:", err);
-    });
+        }
+    }
 }
 
-function getRandomImage(interaction) {
-    getImage(getText(null, 3));
+function writeImage(response, query, message) {
+    console.log("Received hypnogram for", query, " - Creating embed message");
+    console.log(response);
+    if (response.error_code == 'GENERATION_FAILED') {
+        message.react("❔");
+        return;
+    }
+    let userMessage = new Discord.MessageEmbed()
+        userMessage.setTitle(query);
+    // Convert image data to an embed
 }
 
-function displayCurrentUserStatisticsMessage(interaction) {
-    interaction.reply({
-        content: getStatisticsMessage(interaction.user.id),
+async function getRandomImage(interaction) {
+    let img = await getImage(getText(null, 3));
+    // img.then(function () {
+        // console.log(" Downloaded image from AWS ");
+    // });
+
+    console.log("getRandomImage", img)
+    return {
+        content: img,
         ephemeral: false
-    });
+    };
+}
+
+function getCurrentUserStatisticsMessage(interaction) {
+    return {
+        content: getStatisticsMessage(interaction.user.id),
+        ephemeral: true
+    };
 }
 
 function getStatisticsMessage(userId) {
@@ -301,13 +331,13 @@ function numberToEmojii(num) {
 
 //test
 // (function () {
-    // var strings = [];
-    // strings.push("alam asup andye atyon aerpo");
-    // strings.push("berson bianeo bowmpe bneowkey bhealsek bwneofyeh");
-    // strings.push("caleikd cthemei calenslid ckndwoer claeoifen");
+// var strings = [];
+// strings.push("alam asup andye atyon aerpo");
+// strings.push("berson bianeo bowmpe bneowkey bhealsek bwneofyeh");
+// strings.push("caleikd cthemei calenslid ckndwoer claeoifen");
 
-    // strings.forEach(function (s) {
-        // markov_bot.seed(s);
-        // mutateVocab(s);
-    // });
+// strings.forEach(function (s) {
+// markov_bot.seed(s);
+// mutateVocab(s);
+// });
 // })();

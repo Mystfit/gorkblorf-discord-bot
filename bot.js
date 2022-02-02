@@ -70,8 +70,9 @@ client.on('interactionCreate', async interaction => {
 
     const command = client.commands.get(interaction.commandName);
 
-    if (!command)
+    if (!command || !interaction) {
         return;
+    }
 
     try {
         await command.execute(interaction);
@@ -125,18 +126,6 @@ function isMentioned(message) {
             message.channel instanceof Discord.DMChannel) &&
         message.author.id != client.user.id);
 }
-
-// function writeImage(response, query, message) {
-// console.log("Received hypnogram for", query, " - Creating embed message");
-// console.log(response);
-// if (response.error_code == 'GENERATION_FAILED') {
-// message.react("❔");
-// return;
-// }
-// let userMessage = new Discord.MessageEmbed()
-// userMessage.setTitle(query);
-// Convert image data to an embed
-// }
 
 async function populateMarkovFromChannel(channel, num_messages) {
     client.channels.fetch(channel).then(async channel => {

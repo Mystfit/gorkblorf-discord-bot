@@ -1,26 +1,24 @@
-const fetch = require('sync-fetch')
+const fetch = require('sync-fetch');
 
-    module.exports.download = function (id) {
-    return new Promise(resolve => {
-        // Default options are marked with *
-        const response = fetch("https://s3.amazonaws.com/hypnogram-images/" + id + ".jpg", {
-            method: 'GET',
-            "headers": {
-                "sec-fetch-dest": "document",
-                "sec-fetch-mode": "navigate",
-                "sec-fetch-site": "cross-site",
-                "sec-fetch-user": "?1",
-                "upgrade-insecure-requests": "1"
-            },
-            "referrerPolicy": "strict-origin-when-cross-origin",
-            "body": null,
-            "method": "GET",
-            "mode": "cors",
-            "credentials": "omit"
-        });
+module.exports.download = async function (id) {
+    console.log("download", id);
+    // Default options are marked with *
+    const response = await fetch("https://s3.amazonaws.com/hypnogram-images/" + id + ".jpg", {
+        method: 'GET',
+        // "headers": {
+        // "sec-fetch-dest": "document",
+        // "sec-fetch-mode": "navigate",
+        // "sec-fetch-site": "cross-site",
+        // "sec-fetch-user": "?1",
+        // "upgrade-insecure-requests": "1"
+        // },
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "body": null,
+        "mode": "cors",
+        "credentials": "omit"
     });
-    console.log(" Downloaded image from AWS ");
-    resolve(response.json());
+
+    return response;
     /*
     // expected result
     // {" image_id ":" d2b372ce9427435888911dbfc8eae2ea "," prompt ":" gorkblorf tentacles logo artstation "}
@@ -50,12 +48,20 @@ const fetch = require('sync-fetch')
 }
 
 module.exports.generate = function (phrase) {
-    var url = " https : / / api.hypnogram.xyz / generate ";
+    var url = " https://api.hypnogram.xyz/generate";
     var method = " POST ";
     var options = {
-        "prompt": phrase,
+        "prompt": getFirst73(phrase),
         "high_resolution": false
     };
+
+    console.log("options", options);
+
+    function getFirst73(string) {
+        let reversed = [...string.substr(0, 73)].reverse().join("");
+        let index = reversed.indexOf(" ");
+        return [...reversed.substr(index)].reverse().join("");
+    }
 
     // Example POST method implementation:
     function postData(url = '', data = {}) {
@@ -72,7 +78,6 @@ module.exports.generate = function (phrase) {
                 // include, *same-origin, omit
                 "headers": {
                     "accept": "application/json ",
-                    "accept-language ": "en-US,en;q=0.9 ",
                     "content-type": "application/json",
                     // " sec - fetch - dest ": " empty ",
                     // " sec - fetch - mode ": " cors ",
@@ -110,7 +115,7 @@ module.exports.generate = function (phrase) {
     // "mode": "cors",
     // "credentials": "omit"
     // });
-     // * /
+    // * /
     return postData(url, options);
     // };
 }
