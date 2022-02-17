@@ -10,7 +10,7 @@
 		"country-language": "^0.1.7",
 		"discord-api-types": "^0.26.1",
 		"discord.js": "^13.3.1",
-		"dotenv": "^8.2.0",
+		"dotenv": "^8.6.0",
 		"install": "^0.13.0",
 		"iso-639-language": "^1.0.1",
 		"languagedetect": "^2.0.0",
