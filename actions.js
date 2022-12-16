@@ -1,5 +1,12 @@
 //Require
-const Discord = require('discord.js');
+
+const {
+    Message,
+    MessageMentions,
+    Embed,
+    MessageAttachment,
+    Collection
+} = require('discord.js');
 const LanguageLookup = require('./languageLookup');
 const WordEvolver = require('./wordEvolver');
 const Statistics = require('./statistics');
@@ -28,7 +35,12 @@ const markov_bot = markov();
 
 var Actions = {
     //commands should return {content: "", ephemeral: false}
-    commands: ["getCurrentUserStatisticsMessage", "getRandomImage"],
+    commands: {
+        "schmomage": getRandomImage,
+        "pellemeto": getCurrentUserStatisticsMessage,
+        "splognobers": getStatisticsMessage
+
+    },
     read: read,
     reply: reply,
     mutateVocab: mutateVocab,
@@ -188,22 +200,35 @@ function writeImage(response, query, message) {
         message.react("❔");
         return;
     }
-    let userMessage = new Discord.MessageEmbed()
+    let userMessage = new Embed()
         userMessage.setTitle(query);
     // Convert image data to an embed
 }
 
 async function getRandomImage(interaction) {
-    let img = await getImage(getText(null, 3));
-    // img.then(function () {
-        // console.log(" Downloaded image from AWS ");
-    // });
+    await interaction.deferReply();
 
-    console.log("getRandomImage", img)
-    return {
-        content: img,
-        ephemeral: false
-    };
+    let img = await getImage(getText(null, 3));
+    let attachment = new MessageAttachment(img);
+    const userMessage = {
+            title: '',
+            author: {
+                name: interaction.member.displayName,
+            },
+            // image: {
+            //     url: "attachment://" + result.image_id,
+            // },
+            timestamp: new Date(),
+            footer: {
+                 text: 'gorkblorf.com'
+                 // icon_url: 'https://i.imgur.com/AfFp7pu.png',
+            },
+        };
+
+    console.log("getRandomImage", img);
+
+    // Reply
+    await interaction.editReply({embeds: [userMessage], files: [attachment], ephemeral: false});
 }
 
 function getCurrentUserStatisticsMessage(interaction) {
@@ -314,7 +339,7 @@ function sanitizeMessage(message_str) {
     // console.log("sanitizeMessage", message_str);
     if (message_str) {
         return message_str.replace(url_re, '')
-        .replace(Discord.MessageMentions.USERS_PATTERN, '')
+        .replace(MessageMentions.USERS_PATTERN, '')
         .replace(mention_re, '');
     } else {
         return "";

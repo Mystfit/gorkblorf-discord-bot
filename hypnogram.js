@@ -5,17 +5,19 @@ module.exports.download = async function (id) {
     // Default options are marked with *
     const response = await fetch("https://s3.amazonaws.com/hypnogram-images/" + id + ".jpg", {
         method: 'GET',
-        // "headers": {
+         "headers": {
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36"
         // "sec-fetch-dest": "document",
         // "sec-fetch-mode": "navigate",
         // "sec-fetch-site": "cross-site",
         // "sec-fetch-user": "?1",
         // "upgrade-insecure-requests": "1"
-        // },
+        },
         "referrerPolicy": "strict-origin-when-cross-origin",
         "body": null,
         "mode": "cors",
-        "credentials": "omit"
+        "credentials": "include"
     });
 
     return response;

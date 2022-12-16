@@ -2,8 +2,11 @@ require('dotenv').config();
 const fs = require("fs");
 const {
     Client,
-    Collection,
-    Intents
+    GatewayIntentBits,
+    Message,
+    Embed,
+    MessageAttachment,
+    Collection
 } = require('discord.js');
 
 //todo move the constants to an external file in a var Constants = {}
@@ -25,11 +28,11 @@ let Actions = require('./actions');
 // Discord client with the intents that it will require in order to operate
 const client = new Discord.Client({
     intents: [
-        Intents.FLAGS.GUILDS,
-        "GUILD_MESSAGES",
-        "GUILD_MESSAGE_REACTIONS",
-        "DIRECT_MESSAGES",
-        "DIRECT_MESSAGE_REACTIONS"
+        GatewayIntentBits.Guilds
+        // "GUILD_MESSAGES",
+        // "GUILD_MESSAGE_REACTIONS",
+        // "DIRECT_MESSAGES",
+        // "DIRECT_MESSAGE_REACTIONS"
     ],
     partials: ["CHANNEL"]
 });
