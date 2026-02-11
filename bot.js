@@ -145,7 +145,7 @@ function respond(message) {
     "";
     var final_reply = response + suffix;
     final_reply = final_reply.replace(',', ' ');
-
+/*
     client.user.setActivity(final_reply, {
         type: 'LISTENING'
     });
@@ -167,6 +167,12 @@ function respond(message) {
     .catch(err => {
         console.log("Couldn't process hypnogram:", err);
     });
+    */
+	try {
+    		message.reactions.resolve('💭').users.remove(client.user.id);
+	} catch(err) {
+    		console.log(`Error resolving reaction: ${err}`);
+	}
 }
 
 function seedMarkovChain(message, message_parsed, validated_message) {
@@ -268,7 +274,7 @@ function validate_gorkblorf_message(message) {
     // Forgive false positives by accumulating violations until we just can't take it any more
     if (num_violations >= max_violations) {
         console.log("Number of Gorkblorf violations:", num_violations);
-        message.react('🔴');
+	//message.react('🔴');
     } else {
         console.log("Good gorkblorf. Total violations for phrase", clean_message, "=", num_violations);
     }
