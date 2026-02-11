@@ -4,9 +4,10 @@ var path = require('path');
 
 //todo move the constants to an external file in a var Constants = {}
 const Discord = require('discord.js');
+const { GatewayIntentBits, Partials, ActivityType, EmbedBuilder, REST, Routes, SlashCommandBuilder } = require('discord.js');
 const LanguageDetect = require('languagedetect');
 const lngDetector = new LanguageDetect();
-const CountryLanguage = require('country-language');
+const CountryLanguage = require('@ladjs/country-language');
 const Iso639Type = require('iso-639-language');
 const iso639_1 = Iso639Type["default"].getType(1);
 const {
@@ -60,12 +61,14 @@ const mutationChance = .05;
 // Discord client with the intents that it will require in order to operate
 const client = new Discord.Client({
     intents: [
-        "GUILD_MESSAGES",
-        "GUILD_MESSAGE_REACTIONS",
-        "DIRECT_MESSAGES",
-        "DIRECT_MESSAGE_REACTIONS"
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.GuildMessageReactions,
+        GatewayIntentBits.DirectMessages,
+        GatewayIntentBits.DirectMessageReactions,
+        GatewayIntentBits.MessageContent
     ],
-    partials: ["CHANNEL"]
+    partials: [Partials.Channel]
 });
 
 var userStatistics = new Map();
@@ -75,7 +78,7 @@ var userStatistics = new Map();
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
     client.user.setActivity('#gorkblorf™ Slorps gamach jubelnard zeferelyfulee fug graftrax himlarpiny sharglafei morgstar', {
-        type: 'LISTENING'
+        type: ActivityType.Listening
     });
     populate_markov_from_channel(watch_channel, start_seed_messages);
     populate_commands();
@@ -89,7 +92,7 @@ try {
 
 // Command registration
 client.on('interactionCreate', async interaction => {
-    if (!interaction.isCommand())
+    if (!interaction.isChatInputCommand())
         return;
 
     const {
@@ -131,7 +134,7 @@ function onMessageCreated(message) {
     console.log("In MessageCreate event");
 
     // Have the bot watch for new messages arriving in a specific channel
-    if (message.channel.id === watch_channel || message.channel instanceof Discord.DMChannel) {
+    if (message.channel.id === watch_channel || message.channel.type === Discord.ChannelType.DM) {
 
         // Make sure message is a valid gorkblorf and get violating words
         let message_parsed = validate_gorkblorf_message(message);
@@ -159,7 +162,7 @@ function onMessageCreated(message) {
 
 function isMentioned(message) {
     return ((message.mentions.users.find(u => u.id === client.user.id) ||
-            message.channel instanceof Discord.DMChannel) &&
+            message.channel.type === Discord.ChannelType.DM) &&
         message.author.id != client.user.id);
 }
 
@@ -209,6 +212,7 @@ function respond(message) {
         console.log("Couldn't process hypnogram:", err);
     });
     */
+	message.reply(final_reply);
 	try {
     		message.reactions.resolve('💭').users.remove(client.user.id);
 	} catch(err) {
@@ -264,7 +268,7 @@ function writeImage(response, query, message) {
       message.react("❔");
       return;
     }
-    let userMessage = new Discord.MessageEmbed()
+    let userMessage = new EmbedBuilder()
     userMessage.setTitle(query);
 
     // Convert image data to an embed
@@ -360,11 +364,23 @@ async function populate_markov_from_channel(channel, num_messages) {
     });
 }
 
-function populate_commands(){
-    client.api.applications(client.user.id).guilds(process.env.GUILD_ID).commands.post({data: {
-        name: 'gorkblorfwords',
-        description: 'Gnward wol trelwarf'
-    }});
+async function populate_commands(){
+    const rest = new REST().setToken(process.env.DISCORD_TOKEN);
+    const commands = [
+        new SlashCommandBuilder()
+            .setName('gorkblorfwords')
+            .setDescription('Gnward wol trelwarf')
+            .toJSON()
+    ];
+    try {
+        await rest.put(
+            Routes.applicationGuildCommands(client.user.id, process.env.GUILD_ID),
+            { body: commands }
+        );
+        console.log('Successfully registered slash commands.');
+    } catch (error) {
+        console.error('Error registering commands:', error);
+    }
 }
 
 function word_language(word) {
@@ -385,7 +401,7 @@ function number_to_emojii(num) {
 
 function sanitize_message(message_str) {
     return message_str.replace(url_re, '')
-    .replace(Discord.MessageMentions.USERS_PATTERN, '')
+    .replace(/<@!?\d+>/g, '')
     .replace(mention_re, '');
 }
 
