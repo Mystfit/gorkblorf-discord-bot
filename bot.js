@@ -68,6 +68,9 @@ const client = new Discord.Client({
     partials: ["CHANNEL"]
 });
 
+var userStatistics = new Map();
+// key: "userid", value: {words: Set("words"), violations: [{key: "word", value: timestamp}]}
+
 // Login to Discord
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
@@ -75,6 +78,7 @@ client.on('ready', () => {
         type: 'LISTENING'
     });
     populate_markov_from_channel(watch_channel, start_seed_messages);
+    populate_commands();
 });
 
 try {
@@ -82,6 +86,38 @@ try {
 } catch (err) {
     console.log("Couldn't login to Discord", err);
 }
+
+// Command registration
+client.on('interactionCreate', async interaction => {
+    if (!interaction.isCommand())
+        return;
+
+    const {
+        commandName
+    } = interaction;
+
+    if (commandName === 'ping') {
+        await interaction.reply('Pong!');
+    } else if (commandName === 'server') {
+        await interaction.reply(`Server name: ${interaction.guild.name}\nTotal members: ${interaction.guild.memberCount}`);
+    } else if (commandName === 'user') {
+        await interaction.reply(`Your tag: ${interaction.user.tag}\nYour id: ${interaction.user.id}`);
+    } else if (commandName === 'gorkblorfwords') {
+        var words_str = "";
+        let words = userStatistics.get(interaction.user.id)?.words ?? null;
+        if(words)
+            words_str = Array.from(words).join('\n')
+
+        var violations_str = "";
+        let violations = userStatistics.get(interaction.user.id)?.violations ?? null;
+        if(violations)
+            violations_str = violations.map(violation => `${violation.timestamp.toString()}: ${violation.word}`).join('\n');
+
+        var response = `**Farhg goo flemsteen:**\n${words_str}.\n`
+        response += `**Zarxistik vez nerkleck:**\n${violations_str}.`
+        await interaction.reply(response);
+    }
+});
 
 // Direct message the bot
 client.on('messageCreate', onMessageCreated);
@@ -103,13 +139,17 @@ function onMessageCreated(message) {
 
         seedMarkovChain(message, message_parsed, validated_message);
 
+        // add to user word list, so we can keep track of who taught which words to the bot
+		addToWordList(message.author.id, message_parsed["valid"]);
+		// keep track of violations
+		addToViolations(message.author.id, message_parsed["invalid"]);
+
         // Watch for direct mentions of the bot and reply to the user
         if (isMentioned(message)) {
             var key = markov_bot.pick();
             if (key) {
         				// Let user know we are generating a response
         				message.react('💭').then(res => respond(message));
-                // respond(message);
             } else {
                 console.log("No key returned from markov chain. Has it been seeded yet?");
             }
@@ -150,7 +190,8 @@ function respond(message) {
         type: 'LISTENING'
     });
 
-    hypnogram_query = final_reply.replace(dictionary_match_re, ' ').replace(/\s\s+/g, ' ').substring(0, 70);
+    // Disabling hypnogram until it can be called via slash command
+    /*hypnogram_query = final_reply.replace(dictionary_match_re, ' ').replace(/\s\s+/g, ' ').substring(0, 70);
     filename = final_reply
         .replace(dictionary_match_re, '')
         .replace(' ', '_') + '.jpg';
@@ -173,6 +214,8 @@ function respond(message) {
 	} catch(err) {
     		console.log(`Error resolving reaction: ${err}`);
 	}
+
+
 }
 
 function seedMarkovChain(message, message_parsed, validated_message) {
@@ -183,6 +226,35 @@ function seedMarkovChain(message, message_parsed, validated_message) {
         console.log("Adding new message to markov database:", validated_message);
         markov_bot.seed(validated_message);
     }
+}
+
+function addToWordList(userId, wordList /* Array */) {
+    var stats = userStatistics.get(userId) ?? {"words": new Set(), "violations": []};
+    var words = stats?.words;
+
+    wordList.forEach(function (word) {
+        words.add(word);
+    });
+
+	stats.words = words;
+    userStatistics.set(userId, stats);
+}
+
+function addToViolations(userId, violationList /* Array */) {
+    var stats = userStatistics.get(userId) ?? {"words": new Set(), "violations": []}
+    var violations = stats.violations;
+	
+    if (!!violations) {
+        violations = [];
+    }
+
+    violationList.forEach(function (violation) {
+        violation.timestamp = new Date(Date.now());
+        violations.push(violation);
+    });
+
+	stats.violations = violations;
+    userStatistics.set(userId, stats);
 }
 
 function writeImage(response, query, message) {
@@ -196,24 +268,6 @@ function writeImage(response, query, message) {
     userMessage.setTitle(query);
 
     // Convert image data to an embed
-    const data = response.image;
-    const attachment = null;
-    const payload = {};
-    if(data){
-        const buffer = new Buffer.from(data, 'base64');
-        attachment = new Discord.MessageAttachment(buffer, filename);
-        userMessage.setDescription("http://hypnogram.xyz");
-        userMessage.setImage('attachment://' + filename);
-        payload.files = [attachment];
-    }
-    payload.embeds = [userMessage];
-
-    try {
-        message.reply(payload);
-    } catch (err) {
-        console.log("Failed to reply to message", err);
-        message.react('❔');
-    }
 }
 
 function validate_gorkblorf_message(message) {
@@ -306,6 +360,13 @@ async function populate_markov_from_channel(channel, num_messages) {
     });
 }
 
+function populate_commands(){
+    client.api.applications(client.user.id).guilds(process.env.GUILD_ID).commands.post({data: {
+        name: 'gorkblorfwords',
+        description: 'Gnward wol trelwarf'
+    }});
+}
+
 function word_language(word) {
     violations = []
     Object.keys(languages).forEach(lang => {
@@ -369,7 +430,7 @@ function getNewWords(message) {
                 a = 0
             }
         }
-		
+
         parentPairs.push({
             a: words[a],
             b: words[b]
